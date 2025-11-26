@@ -105,7 +105,7 @@ class AppTheme {
           fontSize: 14.sp,
         ),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: surfaceColor,
         elevation: 2,
         shape: RoundedRectangleBorder(

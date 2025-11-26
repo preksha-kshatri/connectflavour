@@ -164,9 +164,9 @@ class _DesktopRecipeCardState extends State<DesktopRecipeCard>
                             Text(
                               widget.title,
                               style: const TextStyle(
-                                fontSize: 15,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                height: 1.2,
+                                height: 1.3,
                                 letterSpacing: -0.1,
                               ),
                               maxLines: 2,
@@ -177,9 +177,9 @@ class _DesktopRecipeCardState extends State<DesktopRecipeCard>
                               Text(
                                 widget.subtitle!,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 11,
                                   color: Colors.grey.shade600,
-                                  height: 1.1,
+                                  height: 1.2,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

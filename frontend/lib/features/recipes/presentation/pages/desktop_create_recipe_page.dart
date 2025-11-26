@@ -408,7 +408,7 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
 
             // Category
             DropdownButtonFormField<String>(
-              initialValue: _selectedCategory,
+              value: _selectedCategory,
               decoration: InputDecoration(
                 labelText: 'Category',
                 border: OutlineInputBorder(
@@ -426,7 +426,7 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
 
             // Difficulty
             DropdownButtonFormField<String>(
-              initialValue: _selectedDifficulty,
+              value: _selectedDifficulty,
               decoration: InputDecoration(
                 labelText: 'Difficulty',
                 border: OutlineInputBorder(

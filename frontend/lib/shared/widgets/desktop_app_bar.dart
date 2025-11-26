@@ -84,8 +84,16 @@ class DesktopAppBar extends StatelessWidget implements PreferredSizeWidget {
                     controller: searchController,
                     onChanged: onSearchChanged,
                     onSubmitted: (_) => onSearchSubmitted?.call(),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
                     decoration: InputDecoration(
                       hintText: searchHint,
+                      hintStyle: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade500,
+                      ),
                       prefixIcon: const Icon(Icons.search, size: 20),
                       suffixIcon: searchController?.text.isNotEmpty ?? false
                           ? IconButton(
