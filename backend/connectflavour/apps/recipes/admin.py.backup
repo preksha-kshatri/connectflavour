@@ -1,0 +1,87 @@
+from django.contrib import admin
+from .models import Recipe, RecipeIngredient, Ingredient, RecipeProcedure, RecipeRating, RecipeView
+
+
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 1
+    fields = ['ingredient', 'quantity', 'unit', 'order']
+
+
+class RecipeProcedureInline(admin.TabularInline):
+    model = RecipeProcedure
+    extra = 1
+    fields = ['step_number', 'instruction', 'estimated_time']
+
+
+@admin.register(Recipe)
+class RecipeAdmin(admin.ModelAdmin):
+    list_display = ['title', 'author', 'category', 'difficulty', 'prep_time', 'cook_time', 'created_at']
+    list_filter = ['category', 'difficulty', 'created_at', 'updated_at']
+    search_fields = ['title', 'description', 'author__username']
+    prepopulated_fields = {'slug': ('title',)}
+    raw_id_fields = ['author', 'category']
+    filter_horizontal = ['tags']
+    inlines = [RecipeIngredientInline, RecipeProcedureInline]
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'slug', 'description', 'author')
+        }),
+        ('Recipe Details', {
+            'fields': ('category', 'tags', 'difficulty', 'servings')
+        }),
+        ('Timing', {
+            'fields': ('prep_time', 'cook_time')
+        }),
+        ('Media', {
+            'fields': ('image',)
+        }),
+        ('Nutrition (Optional)', {
+            'fields': ('calories', 'protein', 'carbs', 'fat', 'fiber'),
+            'classes': ['collapse']
+        })
+    )
+
+
+@admin.register(Ingredient)
+class IngredientAdmin(admin.ModelAdmin):
+    list_display = ['name', 'category', 'is_common']
+    list_filter = ['category', 'is_common']
+    search_fields = ['name']
+
+
+@admin.register(RecipeIngredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    list_display = ['recipe', 'ingredient', 'quantity', 'unit', 'order']
+    list_filter = ['unit']
+    search_fields = ['recipe__title', 'ingredient__name']
+    raw_id_fields = ['recipe', 'ingredient']
+
+
+@admin.register(RecipeProcedure)
+class RecipeProcedureAdmin(admin.ModelAdmin):
+    list_display = ['recipe', 'step_number', 'instruction_preview', 'estimated_time']
+    list_filter = ['estimated_time']
+    search_fields = ['recipe__title', 'instruction']
+    raw_id_fields = ['recipe']
+    
+    def instruction_preview(self, obj):
+        return obj.instruction[:50] + '...' if len(obj.instruction) > 50 else obj.instruction
+    instruction_preview.short_description = 'Instruction Preview'
+
+
+@admin.register(RecipeRating)
+class RecipeRatingAdmin(admin.ModelAdmin):
+    list_display = ['recipe', 'user', 'rating', 'created_at']
+    list_filter = ['rating', 'created_at']
+    search_fields = ['recipe__title', 'user__username']
+    raw_id_fields = ['recipe', 'user']
+
+
+@admin.register(RecipeView)
+class RecipeViewAdmin(admin.ModelAdmin):
+    list_display = ['recipe', 'user', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['recipe__title', 'user__username']
+    raw_id_fields = ['recipe', 'user']

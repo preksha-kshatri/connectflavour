@@ -1,0 +1,59 @@
+from django.contrib import admin
+from .models import Follow, Wishlist, Collection, Comment, UserActivity, RecipeShare, CollectionRecipe
+
+
+@admin.register(Follow)
+class FollowAdmin(admin.ModelAdmin):
+    list_display = ['follower', 'following', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['follower__username', 'following__username']
+    raw_id_fields = ['follower', 'following']
+
+
+@admin.register(Wishlist)
+class WishlistAdmin(admin.ModelAdmin):
+    list_display = ['user', 'recipe', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['user__username', 'recipe__title']
+    raw_id_fields = ['user', 'recipe']
+
+
+@admin.register(Collection)
+class CollectionAdmin(admin.ModelAdmin):
+    list_display = ['name', 'user', 'is_public', 'created_at']
+    list_filter = ['is_public', 'created_at']
+    search_fields = ['name', 'user__username']
+    raw_id_fields = ['user']
+    filter_horizontal = ['recipes']
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['user', 'recipe', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['user__username', 'recipe__title', 'content']
+    raw_id_fields = ['user', 'recipe']
+
+
+@admin.register(UserActivity)
+class UserActivityAdmin(admin.ModelAdmin):
+    list_display = ['user', 'activity_type', 'created_at']
+    list_filter = ['activity_type', 'created_at']
+    search_fields = ['user__username', 'description']
+    raw_id_fields = ['user', 'recipe']
+
+
+@admin.register(RecipeShare)
+class RecipeShareAdmin(admin.ModelAdmin):
+    list_display = ['user', 'recipe', 'platform', 'created_at']
+    list_filter = ['platform', 'created_at']
+    search_fields = ['user__username', 'recipe__title']
+    raw_id_fields = ['user', 'recipe']
+
+
+@admin.register(CollectionRecipe)
+class CollectionRecipeAdmin(admin.ModelAdmin):
+    list_display = ['collection', 'recipe', 'added_at']
+    list_filter = ['added_at']
+    search_fields = ['collection__name', 'recipe__title']
+    raw_id_fields = ['collection', 'recipe']
