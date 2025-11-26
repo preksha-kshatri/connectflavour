@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:connectflavour/shared/widgets/desktop_app_bar.dart';
-import 'package:connectflavour/shared/widgets/desktop_layouts.dart';
 
 /// Desktop-optimized profile page with tabs
 class DesktopProfilePage extends StatefulWidget {

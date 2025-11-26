@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:connectflavour/core/theme/app_theme.dart';
+import 'package:flutter/foundation.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -65,90 +66,103 @@ class _SplashPageState extends State<SplashPage>
 
   @override
   Widget build(BuildContext context) {
+    // Desktop & web-specific layout tweaks
+    final isWeb = kIsWeb;
+    final isDesktop = isWeb ||
+        [TargetPlatform.windows, TargetPlatform.macOS, TargetPlatform.linux]
+            .contains(defaultTargetPlatform);
+    final logoSize = isDesktop ? 180.0 : 120.w;
+    final iconSize = isDesktop ? 90.0 : 60.w;
+    final titleFontSize = isDesktop ? 48.0 : 32.sp;
+    final subtitleFontSize = isDesktop ? 22.0 : 16.sp;
+    final progressSize = isDesktop ? 60.0 : 40.w;
+    final progressStroke = isDesktop ? 5.0 : 3.w;
+
     return Scaffold(
       backgroundColor: AppTheme.primaryColor,
-      body: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                AnimatedBuilder(
-                  animation: _animationController,
-                  builder: (context, child) {
-                    return FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: ScaleTransition(
-                        scale: _scaleAnimation,
-                        child: Container(
-                          width: 120.w,
-                          height: 120.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 20.r,
-                                offset: Offset(0, 10.h),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.restaurant,
-                            size: 60.w,
-                            color: AppTheme.primaryColor,
-                          ),
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: isDesktop ? 600.0 : double.infinity,
+            minWidth: isDesktop ? 400.0 : 0.0,
+          ),
+          padding: EdgeInsets.symmetric(horizontal: isDesktop ? 32.0 : 0.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: ScaleTransition(
+                      scale: _scaleAnimation,
+                      child: Container(
+                        width: logoSize,
+                        height: logoSize,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              BorderRadius.circular(isDesktop ? 36.0 : 24.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: isDesktop ? 30.0 : 20.r,
+                              offset: Offset(0, isDesktop ? 16.0 : 10.h),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.restaurant,
+                          size: iconSize,
+                          color: AppTheme.primaryColor,
                         ),
                       ),
-                    );
-                  },
-                ),
-                SizedBox(height: 32.h),
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Text(
-                    'ConnectFlavour',
-                    style: TextStyle(
-                      fontSize: 32.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.2,
                     ),
+                  );
+                },
+              ),
+              SizedBox(height: isDesktop ? 48.0 : 32.h),
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: Text(
+                  'ConnectFlavour',
+                  style: TextStyle(
+                    fontSize: titleFontSize,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: isDesktop ? 16.0 : 8.h),
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: Text(
+                  'Discover & Share Amazing Recipes',
+                  style: TextStyle(
+                    fontSize: subtitleFontSize,
+                    color: Colors.white.withOpacity(0.9),
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: isDesktop ? 64.0 : 48.h),
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: SizedBox(
+                  width: progressSize,
+                  height: progressSize,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: progressStroke,
                   ),
                 ),
-                SizedBox(height: 8.h),
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Text(
-                    'Discover & Share Amazing Recipes',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 48.h),
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SizedBox(
-                    width: 40.w,
-                    height: 40.w,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 3.w,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

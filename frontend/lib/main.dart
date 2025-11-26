@@ -36,7 +36,7 @@ void main() async {
   await StorageService.init();
 
   runApp(
-    ProviderScope(
+    const ProviderScope(
       child: ConnectFlavourApp(),
     ),
   );

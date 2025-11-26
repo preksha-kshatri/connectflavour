@@ -99,18 +99,18 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                         const Text(
                           'ConnectFlavour',
                           style: TextStyle(
-                            fontSize: 48,
+                            fontSize: 32,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                             letterSpacing: -1,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         // Tagline
                         Text(
                           'Discover and share amazing recipes',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 14,
                             color: Colors.white.withOpacity(0.9),
                             fontWeight: FontWeight.w400,
                           ),
@@ -140,17 +140,17 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                               // Welcome text
                               Text(
                                 'Welcome Back!',
-                                style: theme.textTheme.headlineLarge?.copyWith(
+                                style: theme.textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 32,
+                                  fontSize: 22,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               Text(
                                 'Sign in to continue your culinary journey',
-                                style: theme.textTheme.bodyLarge?.copyWith(
+                                style: theme.textTheme.bodyMedium?.copyWith(
                                   color: Colors.grey.shade600,
-                                  fontSize: 16,
+                                  fontSize: 13,
                                 ),
                               ),
                               const SizedBox(height: 48),
@@ -163,14 +163,16 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                 decoration: InputDecoration(
                                   labelText: 'Email',
                                   hintText: 'Enter your email',
-                                  prefixIcon: const Icon(Icons.email_outlined, size: 20),
+                                  prefixIcon: const Icon(Icons.email_outlined,
+                                      size: 20),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   filled: true,
-                                  fillColor: theme.brightness == Brightness.light
-                                      ? Colors.grey.shade50
-                                      : Colors.grey.shade900,
+                                  fillColor:
+                                      theme.brightness == Brightness.light
+                                          ? Colors.grey.shade50
+                                          : Colors.grey.shade900,
                                 ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
@@ -191,7 +193,8 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                 decoration: InputDecoration(
                                   labelText: 'Password',
                                   hintText: 'Enter your password',
-                                  prefixIcon: const Icon(Icons.lock_outlined, size: 20),
+                                  prefixIcon:
+                                      const Icon(Icons.lock_outlined, size: 20),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _isPasswordVisible
@@ -201,7 +204,8 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                     ),
                                     onPressed: () {
                                       setState(() {
-                                        _isPasswordVisible = !_isPasswordVisible;
+                                        _isPasswordVisible =
+                                            !_isPasswordVisible;
                                       });
                                     },
                                   ),
@@ -209,9 +213,10 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   filled: true,
-                                  fillColor: theme.brightness == Brightness.light
-                                      ? Colors.grey.shade50
-                                      : Colors.grey.shade900,
+                                  fillColor:
+                                      theme.brightness == Brightness.light
+                                          ? Colors.grey.shade50
+                                          : Colors.grey.shade900,
                                 ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
@@ -227,7 +232,8 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
 
                               // Remember me & Forgot password
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
@@ -285,7 +291,8 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                           width: 20,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation<Color>(
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
                                               Colors.white,
                                             ),
                                           ),
@@ -304,9 +311,12 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                               // Divider
                               Row(
                                 children: [
-                                  Expanded(child: Divider(color: Colors.grey.shade300)),
+                                  Expanded(
+                                      child:
+                                          Divider(color: Colors.grey.shade300)),
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
                                     child: Text(
                                       'OR',
                                       style: TextStyle(
@@ -315,7 +325,9 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                       ),
                                     ),
                                   ),
-                                  Expanded(child: Divider(color: Colors.grey.shade300)),
+                                  Expanded(
+                                      child:
+                                          Divider(color: Colors.grey.shade300)),
                                 ],
                               ),
                               const SizedBox(height: 24),
@@ -326,12 +338,16 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                   Expanded(
                                     child: OutlinedButton.icon(
                                       onPressed: () {},
-                                      icon: const Icon(Icons.g_mobiledata, size: 24),
-                                      label: const Text('Google'),
+                                      icon: const Icon(Icons.g_mobiledata,
+                                          size: 18),
+                                      label: const Text('Google',
+                                          style: TextStyle(fontSize: 14)),
                                       style: OutlinedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 8),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
                                       ),
                                     ),
@@ -340,12 +356,16 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                   Expanded(
                                     child: OutlinedButton.icon(
                                       onPressed: () {},
-                                      icon: const Icon(Icons.facebook, size: 20),
-                                      label: const Text('Facebook'),
+                                      icon:
+                                          const Icon(Icons.facebook, size: 16),
+                                      label: const Text('Facebook',
+                                          style: TextStyle(fontSize: 14)),
                                       style: OutlinedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 8),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
                                       ),
                                     ),
@@ -369,13 +389,15 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                     style: TextButton.styleFrom(
                                       padding: EdgeInsets.zero,
                                       minimumSize: Size.zero,
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
                                     ),
                                     child: Text(
                                       'Sign up',
                                       style: TextStyle(
                                         color: theme.colorScheme.primary,
                                         fontWeight: FontWeight.w600,
+                                        fontSize: 15,
                                       ),
                                     ),
                                   ),

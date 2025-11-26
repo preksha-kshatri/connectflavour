@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:connectflavour/core/theme/app_theme.dart';
 
 class CategoriesPage extends StatelessWidget {
   const CategoriesPage({super.key});

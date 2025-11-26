@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 /// Desktop-optimized app bar with search, menu, and actions
 class DesktopAppBar extends StatelessWidget implements PreferredSizeWidget {

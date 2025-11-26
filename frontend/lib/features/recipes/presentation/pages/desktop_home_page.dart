@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:connectflavour/core/theme/app_theme.dart';
 import 'package:connectflavour/core/utils/platform_utils_enhanced.dart';
 import 'package:connectflavour/shared/widgets/desktop_app_bar.dart';
 import 'package:connectflavour/shared/widgets/desktop_cards.dart';
-import 'package:connectflavour/shared/widgets/desktop_layouts.dart';
 
 class DesktopHomePage extends StatefulWidget {
   const DesktopHomePage({super.key});
