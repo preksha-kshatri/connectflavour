@@ -72,9 +72,22 @@ class _SplitPaneLayoutState extends State<SplitPaneLayout> {
                   : SystemMouseCursors.basic,
               child: Container(
                 width: widget.dividerThickness,
-                color: _isDragging
-                    ? Theme.of(context).colorScheme.primary.withOpacity(0.5)
-                    : (widget.dividerColor ?? Colors.grey.shade300),
+                decoration: BoxDecoration(
+                  color: _isDragging
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
+                      : (widget.dividerColor ?? const Color(0xFFE0E0E0)),
+                  boxShadow: _isDragging
+                      ? [
+                          BoxShadow(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withOpacity(0.2),
+                            blurRadius: 4,
+                          ),
+                        ]
+                      : null,
+                ),
               ),
             ),
           ),
@@ -375,7 +388,8 @@ class _BreadcrumbItemWidgetState extends State<_BreadcrumbItemWidget> {
           widget.item.label,
           style: TextStyle(
             fontSize: widget.fontSize,
-            color: _isHovered ? Theme.of(context).colorScheme.primary : textColor,
+            color:
+                _isHovered ? Theme.of(context).colorScheme.primary : textColor,
             decoration: _isHovered ? TextDecoration.underline : null,
           ),
         ),

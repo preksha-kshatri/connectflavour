@@ -13,7 +13,7 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  bool _isRailExpanded = true;
+  bool _isRailExpanded = false; // Start collapsed by default
 
   int _getCurrentIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
@@ -56,19 +56,27 @@ class _MainNavigationState extends State<MainNavigation> {
       bindings: {
         // Navigation shortcuts (Cmd/Ctrl + 1-4)
         LogicalKeySet(
-          PlatformUtils.isMacOS ? LogicalKeyboardKey.meta : LogicalKeyboardKey.control,
+          PlatformUtils.isMacOS
+              ? LogicalKeyboardKey.meta
+              : LogicalKeyboardKey.control,
           LogicalKeyboardKey.digit1,
         ): () => _onItemTapped(context, 0),
         LogicalKeySet(
-          PlatformUtils.isMacOS ? LogicalKeyboardKey.meta : LogicalKeyboardKey.control,
+          PlatformUtils.isMacOS
+              ? LogicalKeyboardKey.meta
+              : LogicalKeyboardKey.control,
           LogicalKeyboardKey.digit2,
         ): () => _onItemTapped(context, 1),
         LogicalKeySet(
-          PlatformUtils.isMacOS ? LogicalKeyboardKey.meta : LogicalKeyboardKey.control,
+          PlatformUtils.isMacOS
+              ? LogicalKeyboardKey.meta
+              : LogicalKeyboardKey.control,
           LogicalKeyboardKey.digit3,
         ): () => _onItemTapped(context, 2),
         LogicalKeySet(
-          PlatformUtils.isMacOS ? LogicalKeyboardKey.meta : LogicalKeyboardKey.control,
+          PlatformUtils.isMacOS
+              ? LogicalKeyboardKey.meta
+              : LogicalKeyboardKey.control,
           LogicalKeyboardKey.digit4,
         ): () => _onItemTapped(context, 3),
       },
@@ -109,21 +117,22 @@ class _MainNavigationState extends State<MainNavigation> {
             backgroundColor: Colors.white,
             selectedIconTheme: const IconThemeData(
               color: AppTheme.primaryColor,
-              size: 28,
+              size: 26,
             ),
             selectedLabelTextStyle: const TextStyle(
               color: AppTheme.primaryColor,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              letterSpacing: -0.2,
             ),
-            unselectedIconTheme: IconThemeData(
-              color: Colors.grey[600],
+            unselectedIconTheme: const IconThemeData(
+              color: Color(0xFF666666),
               size: 24,
             ),
-            unselectedLabelTextStyle: TextStyle(
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w400,
-              fontSize: 12,
+            unselectedLabelTextStyle: const TextStyle(
+              color: Color(0xFF666666),
+              fontWeight: FontWeight.w500,
+              fontSize: 13,
             ),
             leading: Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -153,7 +162,9 @@ class _MainNavigationState extends State<MainNavigation> {
                   const SizedBox(height: 16),
                   IconButton(
                     icon: Icon(
-                      _isRailExpanded ? Icons.chevron_left : Icons.chevron_right,
+                      _isRailExpanded
+                          ? Icons.chevron_left
+                          : Icons.chevron_right,
                       size: 20,
                     ),
                     onPressed: () {

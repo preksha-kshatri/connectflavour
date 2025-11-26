@@ -32,23 +32,30 @@ class DesktopAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(56);
+  Size get preferredSize => const Size.fromHeight(64);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: preferredSize.height,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+        color: backgroundColor ?? Colors.white,
         border: Border(
           bottom: BorderSide(
-            color: Colors.grey.shade200,
+            color: const Color(0xFFE0E0E0),
             width: 1,
           ),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         child: Row(
           children: [
             // Back button or leading widget
@@ -63,12 +70,15 @@ class DesktopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
             // Title
             if (!showSearch) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                  color: Color(0xFF1A1A1A),
+                ),
               ),
             ],
 
@@ -86,17 +96,21 @@ class DesktopAppBar extends StatelessWidget implements PreferredSizeWidget {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
+                      height: 1.5,
                     ),
                     decoration: InputDecoration(
                       hintText: searchHint,
                       hintStyle: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey.shade500,
+                        color: Colors.grey.shade400,
+                        fontWeight: FontWeight.w400,
                       ),
-                      prefixIcon: const Icon(Icons.search, size: 20),
+                      prefixIcon: Icon(Icons.search,
+                          size: 20, color: Colors.grey.shade600),
                       suffixIcon: searchController?.text.isNotEmpty ?? false
                           ? IconButton(
-                              icon: const Icon(Icons.clear, size: 20),
+                              icon: Icon(Icons.clear,
+                                  size: 18, color: Colors.grey.shade600),
                               onPressed: () {
                                 searchController?.clear();
                                 onSearchChanged?.call('');
@@ -104,14 +118,23 @@ class DesktopAppBar extends StatelessWidget implements PreferredSizeWidget {
                             )
                           : null,
                       filled: true,
-                      fillColor: Colors.grey.shade100,
+                      fillColor: const Color(0xFFF5F7FA),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF2E7D32), width: 2),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 12,
+                        vertical: 14,
                       ),
                       isDense: true,
                     ),
@@ -243,7 +266,8 @@ class DesktopStatusBar extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: backgroundColor ??
+            Theme.of(context).colorScheme.surfaceContainerHighest,
         border: Border(
           top: BorderSide(
             color: Colors.grey.shade300,

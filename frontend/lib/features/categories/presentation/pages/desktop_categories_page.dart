@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:connectflavour/core/utils/platform_utils_enhanced.dart';
-import 'package:connectflavour/shared/widgets/desktop_app_bar.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/services/category_service.dart';
+import '../../../../core/models/category.dart';
 
-/// Desktop-optimized categories page with grid layout
 class DesktopCategoriesPage extends StatefulWidget {
   const DesktopCategoriesPage({super.key});
 
@@ -11,340 +11,287 @@ class DesktopCategoriesPage extends StatefulWidget {
 }
 
 class _DesktopCategoriesPageState extends State<DesktopCategoriesPage> {
-  final _searchController = TextEditingController();
+  final CategoryService _categoryService = CategoryService();
+
+  List<Category> _allCategories = [];
+  List<Category> _filteredCategories = [];
+  bool _isLoading = true;
+  String? _errorMessage;
   String _searchQuery = '';
 
+  final Map<String, IconData> _iconMap = {
+    'breakfast': Icons.wb_sunny,
+    'lunch': Icons.lunch_dining,
+    'dinner': Icons.dinner_dining,
+    'desserts': Icons.cake,
+    'appetizers': Icons.tapas,
+    'salads': Icons.eco,
+    'soups': Icons.soup_kitchen,
+    'beverages': Icons.local_cafe,
+    'pasta': Icons.ramen_dining,
+    'seafood': Icons.set_meal,
+    'vegetarian': Icons.grass,
+    'vegan': Icons.forest,
+    'grill': Icons.outdoor_grill,
+    'baking': Icons.bakery_dining,
+    'asian': Icons.rice_bowl,
+  };
+
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadCategories();
   }
 
-  final List<Map<String, dynamic>> _categories = [
-    {
-      'name': 'Breakfast',
-      'icon': Icons.free_breakfast,
-      'count': 24,
-      'color': const Color(0xFFFF9800)
-    },
-    {
-      'name': 'Lunch',
-      'icon': Icons.restaurant,
-      'count': 18,
-      'color': const Color(0xFF4CAF50)
-    },
-    {
-      'name': 'Dinner',
-      'icon': Icons.local_dining,
-      'count': 32,
-      'color': const Color(0xFFF44336)
-    },
-    {
-      'name': 'Dessert',
-      'icon': Icons.cake,
-      'count': 15,
-      'color': const Color(0xFFE91E63)
-    },
-    {
-      'name': 'Appetizer',
-      'icon': Icons.local_florist,
-      'count': 12,
-      'color': const Color(0xFF8BC34A)
-    },
-    {
-      'name': 'Beverages',
-      'icon': Icons.local_bar,
-      'count': 8,
-      'color': const Color(0xFF00BCD4)
-    },
-    {
-      'name': 'Snacks',
-      'icon': Icons.fastfood,
-      'count': 20,
-      'color': const Color(0xFFFF5722)
-    },
-    {
-      'name': 'Salads',
-      'icon': Icons.restaurant_menu,
-      'count': 16,
-      'color': const Color(0xFF8BC34A)
-    },
-    {
-      'name': 'Soups',
-      'icon': Icons.local_cafe,
-      'count': 10,
-      'color': const Color(0xFFFF9800)
-    },
-    {
-      'name': 'Pasta',
-      'icon': Icons.restaurant,
-      'count': 22,
-      'color': const Color(0xFFFFEB3B)
-    },
-    {
-      'name': 'Seafood',
-      'icon': Icons.set_meal,
-      'count': 14,
-      'color': const Color(0xFF00BCD4)
-    },
-    {
-      'name': 'Vegetarian',
-      'icon': Icons.local_florist,
-      'count': 28,
-      'color': const Color(0xFF4CAF50)
-    },
-  ];
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-  List<Map<String, dynamic>> get _filteredCategories {
-    if (_searchQuery.isEmpty) return _categories;
-    return _categories
-        .where((cat) =>
-            cat['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
+    try {
+      final categories = await _categoryService.getCategories();
+      setState(() {
+        _allCategories = categories;
+        _filteredCategories = categories;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _applySearch() {
+    setState(() {
+      _filteredCategories = _allCategories.where((category) {
+        if (_searchQuery.isEmpty) return true;
+        return category.name
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()) ||
+            (category.description
+                    ?.toLowerCase()
+                    .contains(_searchQuery.toLowerCase()) ??
+                false);
+      }).toList();
+    });
+  }
+
+  IconData _getIconData(String iconName) {
+    return _iconMap[iconName.toLowerCase()] ?? Icons.restaurant;
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
-    final columns = PlatformUtils.getGridColumns(size.width);
-
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF8FAF9),
       body: Column(
         children: [
-          // Desktop App Bar
-          DesktopAppBar(
-            title: 'Categories',
-            searchController: _searchController,
-            onSearchChanged: (query) {
-              setState(() => _searchQuery = query);
-            },
-            searchHint: 'Search categories...',
-          ),
-
-          // Toolbar
-          Container(
-            height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              border: Border(
-                bottom: BorderSide(
-                  color: theme.dividerColor,
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  '${_filteredCategories.length} Categories',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const Spacer(),
-                DesktopToolbar(
-                  actions: [
-                    ToolbarAction(
-                      label: 'Sort: A-Z',
-                      icon: Icons.sort_by_alpha,
-                      onPressed: () {},
-                    ),
-                    ToolbarAction(
-                      label: 'View',
-                      icon: Icons.grid_view,
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Categories Grid
+          _buildHeader(),
           Expanded(
-            child: _filteredCategories.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 64,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No categories found',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : GridView.builder(
-                    padding: const EdgeInsets.all(24),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: columns,
-                      childAspectRatio: 1.5,
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 20,
-                    ),
-                    itemCount: _filteredCategories.length,
-                    itemBuilder: (context, index) {
-                      final category = _filteredCategories[index];
-                      return _CategoryCard(
-                        name: category['name'],
-                        icon: category['icon'],
-                        count: category['count'],
-                        color: category['color'],
-                      );
-                    },
-                  ),
-          ),
-
-          // Status Bar
-          DesktopStatusBar(
-            items: [
-              StatusBarItem(
-                icon: Icons.category,
-                text: '${_categories.length} total categories',
-              ),
-              StatusBarItem(
-                icon: Icons.receipt_long,
-                text: '${_categories.fold<int>(0, (sum, cat) => sum + (cat['count'] as int))} total recipes',
-              ),
-            ],
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage != null
+                    ? _buildErrorView()
+                    : _buildContent(),
           ),
         ],
       ),
     );
   }
-}
 
-class _CategoryCard extends StatefulWidget {
-  final String name;
-  final IconData icon;
-  final int count;
-  final Color color;
-
-  const _CategoryCard({
-    required this.name,
-    required this.icon,
-    required this.count,
-    required this.color,
-  });
-
-  @override
-  State<_CategoryCard> createState() => _CategoryCardState();
-}
-
-class _CategoryCardState extends State<_CategoryCard> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
-        child: Card(
-          elevation: _isHovered ? 8 : 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+  Widget _buildErrorView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            'Failed to load categories',
+            style: TextStyle(fontSize: 20, color: Colors.grey[600]),
           ),
-          child: InkWell(
-            onTap: () {
-              // TODO: Navigate to category recipes
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    widget.color.withOpacity(0.1),
-                    widget.color.withOpacity(0.05),
-                  ],
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Icon
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: widget.color.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      widget.icon,
-                      size: 28,
-                      color: widget.color,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Category name
-                  Text(
-                    widget.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  // Recipe count
-                  Text(
-                    '${widget.count} recipes',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  if (_isHovered) const SizedBox(height: 8),
-                  // View button
-                  if (_isHovered)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: widget.color,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Text(
-                        'View Recipes',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+          const SizedBox(height: 8),
+          Text(
+            _errorMessage ?? 'Unknown error',
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _loadCategories,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Retry'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2E7D32),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Recipe Categories',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Browse recipes by category',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 24),
+          TextField(
+            onChanged: (value) {
+              _searchQuery = value;
+              _applySearch();
+            },
+            decoration: InputDecoration(
+              hintText: 'Search categories...',
+              prefixIcon: const Icon(Icons.search, color: Color(0xFF2E7D32)),
+              filled: true,
+              fillColor: const Color(0xFFF8FAF9),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    if (_filteredCategories.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No categories found',
+              style: TextStyle(fontSize: 20, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try a different search term',
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${_filteredCategories.length} categories found',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 24),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              childAspectRatio: 1.2,
+              crossAxisSpacing: 24,
+              mainAxisSpacing: 24,
+            ),
+            itemCount: _filteredCategories.length,
+            itemBuilder: (context, index) {
+              final category = _filteredCategories[index];
+              return _buildCategoryCard(category);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard(Category category) {
+    final iconData = _getIconData(category.icon ?? 'restaurant');
+    final recipeCount = category.recipesCount;
+
+    return InkWell(
+      onTap: () {
+        context.go('/recipes?category=${category.slug}');
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E7D32).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                iconData,
+                size: 48,
+                color: const Color(0xFF2E7D32),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              category.name,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A1A1A),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$recipeCount recipes',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
         ),
       ),
     );

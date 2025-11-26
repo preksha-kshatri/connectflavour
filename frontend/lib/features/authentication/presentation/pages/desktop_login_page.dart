@@ -160,9 +160,13 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 autofocus: true,
+                                style: const TextStyle(fontSize: 16),
                                 decoration: InputDecoration(
                                   labelText: 'Email',
+                                  labelStyle: const TextStyle(fontSize: 13),
                                   hintText: 'Enter your email',
+                                  hintStyle: const TextStyle(
+                                      fontSize: 16, color: Colors.grey),
                                   prefixIcon: const Icon(Icons.email_outlined,
                                       size: 20),
                                   border: OutlineInputBorder(
@@ -190,9 +194,13 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                               TextFormField(
                                 controller: _passwordController,
                                 obscureText: !_isPasswordVisible,
+                                style: const TextStyle(fontSize: 16),
                                 decoration: InputDecoration(
                                   labelText: 'Password',
+                                  labelStyle: const TextStyle(fontSize: 13),
                                   hintText: 'Enter your password',
+                                  hintStyle: const TextStyle(
+                                      fontSize: 16, color: Colors.grey),
                                   prefixIcon:
                                       const Icon(Icons.lock_outlined, size: 20),
                                   suffixIcon: IconButton(

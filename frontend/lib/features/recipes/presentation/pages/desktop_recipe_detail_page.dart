@@ -3,21 +3,28 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:connectflavour/core/theme/app_theme.dart';
 import 'package:connectflavour/core/utils/platform_utils_enhanced.dart';
-import 'package:connectflavour/shared/widgets/desktop_app_bar.dart';
 import 'package:connectflavour/shared/widgets/desktop_layouts.dart';
 import 'package:connectflavour/shared/widgets/desktop_cards.dart';
+import 'package:connectflavour/core/models/recipe.dart';
+import 'package:connectflavour/core/services/recipe_service.dart';
 
 class DesktopRecipeDetailPage extends StatefulWidget {
   final String slug;
   const DesktopRecipeDetailPage({super.key, required this.slug});
 
   @override
-  State<DesktopRecipeDetailPage> createState() => _DesktopRecipeDetailPageState();
+  State<DesktopRecipeDetailPage> createState() =>
+      _DesktopRecipeDetailPageState();
 }
 
 class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final RecipeService _recipeService = RecipeService();
+
+  Recipe? _recipe;
+  List<Review> _reviews = [];
+  bool _isLoading = true;
   bool _isFavorite = false;
   int _servings = 4;
 
@@ -25,6 +32,31 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _loadRecipeData();
+  }
+
+  Future<void> _loadRecipeData() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final recipe = await _recipeService.getRecipeBySlug(widget.slug);
+      if (recipe != null) {
+        final reviews = await _recipeService.getRecipeReviews(recipe.id);
+
+        setState(() {
+          _recipe = recipe;
+          _reviews = reviews;
+          _servings = recipe.servings;
+          _isFavorite = recipe.isFavorite;
+          _isLoading = false;
+        });
+      } else {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      print('Error loading recipe: $e');
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -44,62 +76,78 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFFAFAFA),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_recipe == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFFAFAFA),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Recipe not found',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: () => context.go('/home'),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Go back to home'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return CallbackShortcuts(
       bindings: {
         LogicalKeySet(
-          PlatformUtils.isMacOS ? LogicalKeyboardKey.meta : LogicalKeyboardKey.control,
+          PlatformUtils.isMacOS
+              ? LogicalKeyboardKey.meta
+              : LogicalKeyboardKey.control,
           LogicalKeyboardKey.keyP,
         ): () => _printRecipe(),
         LogicalKeySet(
-          PlatformUtils.isMacOS ? LogicalKeyboardKey.meta : LogicalKeyboardKey.control,
+          PlatformUtils.isMacOS
+              ? LogicalKeyboardKey.meta
+              : LogicalKeyboardKey.control,
           LogicalKeyboardKey.keyS,
         ): () => _saveRecipe(),
       },
       child: Focus(
         autofocus: true,
         child: Scaffold(
-          backgroundColor: Colors.grey.shade50,
+          backgroundColor: const Color(0xFFFAFAFA),
           body: Column(
             children: [
-              // App Bar
-              DesktopAppBar(
-                title: _getRecipeTitle(widget.slug),
-                showBackButton: true,
-                actions: [
-                  HoverIconButton(
-                    icon: _isFavorite ? Icons.favorite : Icons.favorite_outline,
-                    onPressed: () {
-                      setState(() => _isFavorite = !_isFavorite);
-                    },
-                    tooltip: 'Add to Favorites',
-                    color: Colors.red,
-                  ),
-                  const SizedBox(width: 8),
-                  HoverIconButton(
-                    icon: Icons.share,
-                    onPressed: _shareRecipe,
-                    tooltip: 'Share Recipe',
-                  ),
-                  const SizedBox(width: 8),
-                  HoverIconButton(
-                    icon: Icons.print,
-                    onPressed: _printRecipe,
-                    tooltip: 'Print (${PlatformUtils.shortcutModifier}+P)',
-                  ),
-                  const SizedBox(width: 8),
-                  HoverIconButton(
-                    icon: Icons.download,
-                    onPressed: _exportRecipe,
-                    tooltip: 'Export PDF',
-                  ),
-                  const SizedBox(width: 8),
-                ],
-              ),
-
               // Breadcrumbs
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                color: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.grey.shade100,
+                      width: 1,
+                    ),
+                  ),
+                ),
                 child: Row(
                   children: [
                     Breadcrumbs(
@@ -113,9 +161,36 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
                           onTap: () => context.go('/home'),
                         ),
                         BreadcrumbItem(
-                          label: _getRecipeTitle(widget.slug),
+                          label: _recipe!.title,
                         ),
                       ],
+                    ),
+                    const Spacer(),
+                    // Action buttons
+                    HoverIconButton(
+                      icon:
+                          _isFavorite ? Icons.favorite : Icons.favorite_outline,
+                      onPressed: _toggleFavorite,
+                      tooltip: 'Add to Favorites',
+                      color: _isFavorite ? Colors.red : null,
+                    ),
+                    const SizedBox(width: 8),
+                    HoverIconButton(
+                      icon: Icons.share,
+                      onPressed: _shareRecipe,
+                      tooltip: 'Share Recipe',
+                    ),
+                    const SizedBox(width: 8),
+                    HoverIconButton(
+                      icon: Icons.print,
+                      onPressed: _printRecipe,
+                      tooltip: 'Print (${PlatformUtils.shortcutModifier}+P)',
+                    ),
+                    const SizedBox(width: 8),
+                    HoverIconButton(
+                      icon: Icons.download,
+                      onPressed: _exportRecipe,
+                      tooltip: 'Export PDF',
                     ),
                   ],
                 ),
@@ -167,66 +242,23 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
       height: 400,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryColor.withOpacity(0.8),
-            AppTheme.primaryColor.withOpacity(0.6),
-          ],
-        ),
+        color: Colors.grey.shade200,
+        image: _recipe!.image != null
+            ? DecorationImage(
+                image: NetworkImage(_recipe!.image!),
+                fit: BoxFit.cover,
+              )
+            : null,
       ),
-      child: Stack(
-        children: [
-          Center(
-            child: Icon(
-              Icons.restaurant_menu,
-              size: 120,
-              color: Colors.white.withOpacity(0.5),
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: Row(
-              children: [
-                _buildImageThumbnail(true),
-                const SizedBox(width: 12),
-                _buildImageThumbnail(false),
-                const SizedBox(width: 12),
-                _buildImageThumbnail(false),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    '1 / 3',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImageThumbnail(bool active) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: active ? Colors.white : Colors.white.withOpacity(0.5),
-          width: active ? 3 : 2,
-        ),
-        color: AppTheme.primaryColor.withOpacity(0.3),
-      ),
-      child: const Icon(Icons.image, color: Colors.white, size: 24),
+      child: _recipe!.image == null
+          ? Center(
+              child: Icon(
+                Icons.restaurant_menu,
+                size: 120,
+                color: Colors.grey.shade400,
+              ),
+            )
+          : null,
     );
   }
 
@@ -238,30 +270,32 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _getRecipeTitle(widget.slug),
+                _recipe!.title,
                 style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'By Chef Gordon Ramsay',
-                style: TextStyle(
+              const SizedBox(height: 10),
+              Text(
+                'By ${_recipe!.authorName}',
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
+              Wrap(
+                spacing: 16,
+                runSpacing: 8,
                 children: [
-                  _buildInfoChip(Icons.schedule, '30 min'),
-                  const SizedBox(width: 16),
+                  _buildInfoChip(Icons.schedule, '${_recipe!.totalTime} min'),
                   _buildInfoChip(Icons.restaurant, '$_servings servings'),
-                  const SizedBox(width: 16),
-                  _buildInfoChip(Icons.local_fire_department, '420 cal'),
-                  const SizedBox(width: 16),
-                  _buildInfoChip(Icons.star, '4.8 (234 reviews)'),
+                  _buildInfoChip(Icons.speed, _recipe!.difficulty),
+                  _buildInfoChip(Icons.star,
+                      '${_recipe!.rating.toStringAsFixed(1)} (${_recipe!.reviewCount} reviews)'),
                 ],
               ),
             ],
@@ -274,7 +308,8 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
           label: const Text('Start Cooking'),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            textStyle:
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -330,16 +365,6 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
   }
 
   Widget _buildIngredientsTab() {
-    final ingredients = [
-      '400g spaghetti pasta',
-      '200g pancetta or guanciale, diced',
-      '4 large eggs',
-      '100g Pecorino Romano cheese, grated',
-      '100g Parmesan cheese, grated',
-      'Black pepper, freshly ground',
-      'Salt for pasta water',
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -364,7 +389,14 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
           ],
         ),
         const SizedBox(height: 16),
-        ...ingredients.map((ingredient) => _buildIngredientItem(ingredient)),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _recipe!.ingredients.length,
+            itemBuilder: (context, index) {
+              return _buildIngredientItem(_recipe!.ingredients[index]);
+            },
+          ),
+        ),
       ],
     );
   }
@@ -388,19 +420,10 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
   }
 
   Widget _buildInstructionsTab() {
-    final steps = [
-      'Bring a large pot of salted water to boil. Cook spaghetti according to package directions until al dente.',
-      'While pasta cooks, fry the pancetta in a large pan over medium heat until crispy, about 5 minutes.',
-      'In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and black pepper.',
-      'Reserve 1 cup of pasta cooking water, then drain pasta.',
-      'Add hot pasta to the pan with pancetta. Remove from heat.',
-      'Quickly stir in the egg mixture, adding pasta water as needed to create a creamy sauce.',
-      'Serve immediately with extra cheese and black pepper on top.',
-    ];
-
     return ListView.builder(
-      itemCount: steps.length,
+      itemCount: _recipe!.instructions.length,
       itemBuilder: (context, index) {
+        final step = _recipe!.instructions[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 24),
           child: Row(
@@ -426,7 +449,7 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  steps[index],
+                  step.instruction,
                   style: const TextStyle(fontSize: 15, height: 1.5),
                 ),
               ),
@@ -438,29 +461,44 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
   }
 
   Widget _buildNutritionTab() {
-    final nutrition = [
-      ['Calories', '420 kcal'],
-      ['Protein', '18g'],
-      ['Carbohydrates', '58g'],
-      ['Fat', '12g'],
-      ['Fiber', '3g'],
-      ['Sugar', '2g'],
-      ['Sodium', '580mg'],
+    if (_recipe!.nutrition == null) {
+      return const Center(
+        child: Text('Nutrition information not available'),
+      );
+    }
+
+    final nutrition = _recipe!.nutrition!;
+    final nutritionData = [
+      ['Calories', '${nutrition.calories} kcal'],
+      ['Protein', '${nutrition.protein}g'],
+      ['Carbohydrates', '${nutrition.carbs}g'],
+      ['Fat', '${nutrition.fat}g'],
+      ['Fiber', '${nutrition.fiber}g'],
+      ['Sugar', '${nutrition.sugar}g'],
+      ['Sodium', '${nutrition.sodium}mg'],
     ];
 
-    return DataTable(
-      columns: const [
-        DataColumn(label: Text('Nutrient', style: TextStyle(fontWeight: FontWeight.bold))),
-        DataColumn(label: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))),
-        DataColumn(label: Text('% Daily Value*', style: TextStyle(fontWeight: FontWeight.bold))),
-      ],
-      rows: nutrition.map((item) {
-        return DataRow(cells: [
-          DataCell(Text(item[0])),
-          DataCell(Text(item[1])),
-          DataCell(Text(_calculateDailyValue(item[0]))),
-        ]);
-      }).toList(),
+    return SingleChildScrollView(
+      child: DataTable(
+        columns: const [
+          DataColumn(
+              label: Text('Nutrient',
+                  style: TextStyle(fontWeight: FontWeight.bold))),
+          DataColumn(
+              label: Text('Amount',
+                  style: TextStyle(fontWeight: FontWeight.bold))),
+          DataColumn(
+              label: Text('% Daily Value*',
+                  style: TextStyle(fontWeight: FontWeight.bold))),
+        ],
+        rows: nutritionData.map((item) {
+          return DataRow(cells: [
+            DataCell(Text(item[0])),
+            DataCell(Text(item[1])),
+            DataCell(Text(_calculateDailyValue(item[0]))),
+          ]);
+        }).toList(),
+      ),
     );
   }
 
@@ -478,9 +516,26 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
   }
 
   Widget _buildReviewsTab() {
+    if (_reviews.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.rate_review_outlined, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'No reviews yet',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
     return ListView.builder(
-      itemCount: 5,
+      itemCount: _reviews.length,
       itemBuilder: (context, index) {
+        final review = _reviews[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           child: Padding(
@@ -490,23 +545,30 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
               children: [
                 Row(
                   children: [
-                    const CircleAvatar(
-                      child: Icon(Icons.person),
+                    CircleAvatar(
+                      backgroundImage: review.userAvatar != null
+                          ? NetworkImage(review.userAvatar!)
+                          : null,
+                      child: review.userAvatar == null
+                          ? const Icon(Icons.person)
+                          : null,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'John Doe',
-                            style: TextStyle(fontWeight: FontWeight.w600),
+                          Text(
+                            review.userName,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           Row(
                             children: List.generate(
                               5,
                               (i) => Icon(
-                                i < 4 ? Icons.star : Icons.star_border,
+                                i < review.rating.round()
+                                    ? Icons.star
+                                    : Icons.star_border,
                                 size: 16,
                                 color: Colors.amber,
                               ),
@@ -516,15 +578,16 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
                       ),
                     ),
                     Text(
-                      '2 days ago',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      _formatDate(review.createdAt),
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Absolutely delicious! The recipe was easy to follow and the result was amazing. My family loved it!',
-                  style: TextStyle(height: 1.5),
+                Text(
+                  review.comment,
+                  style: const TextStyle(height: 1.5),
                 ),
               ],
             ),
@@ -532,6 +595,18 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
         );
       },
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) return 'Today';
+    if (difference.inDays == 1) return '1 day ago';
+    if (difference.inDays < 7) return '${difference.inDays} days ago';
+    if (difference.inDays < 30)
+      return '${(difference.inDays / 7).floor()} weeks ago';
+    return '${(difference.inDays / 30).floor()} months ago';
   }
 
   Widget _buildSidebar() {
@@ -549,14 +624,12 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
             ),
           ),
           const SizedBox(height: 16),
-          Expanded(
-            child: ListView(
-              children: [
-                _buildRelatedRecipeCard('Pasta Alfredo', Icons.restaurant, '4.7'),
-                _buildRelatedRecipeCard('Pasta Primavera', Icons.local_dining, '4.6'),
-                _buildRelatedRecipeCard('Lasagna', Icons.restaurant_menu, '4.9'),
-                _buildRelatedRecipeCard('Ravioli', Icons.food_bank, '4.5'),
-              ],
+          const Expanded(
+            child: Center(
+              child: Text(
+                'No related recipes available',
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
           ),
         ],
@@ -564,60 +637,19 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage>
     );
   }
 
-  Widget _buildRelatedRecipeCard(String title, IconData icon, String rating) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: AppTheme.primaryColor),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, size: 14, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text(
-                          rating,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.arrow_forward_ios, size: 14),
-            ],
+  Future<void> _toggleFavorite() async {
+    final success = await _recipeService.toggleFavorite(_recipe!.id);
+    if (success) {
+      setState(() => _isFavorite = !_isFavorite);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                _isFavorite ? 'Added to favorites' : 'Removed from favorites'),
           ),
-        ),
-      ),
-    );
+        );
+      }
+    }
   }
 
   void _shareRecipe() {

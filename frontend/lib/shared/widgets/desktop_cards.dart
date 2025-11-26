@@ -104,14 +104,20 @@ class _DesktopRecipeCardState extends State<DesktopRecipeCard>
                     children: [
                       // Icon/Image section - Fixed height
                       Container(
-                        height: 140,
+                        height: 120,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Theme.of(context).colorScheme.primary.withOpacity(0.85),
-                              Theme.of(context).colorScheme.primary.withOpacity(0.65),
+                              Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.85),
+                              Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.65),
                             ],
                           ),
                         ),
@@ -120,7 +126,7 @@ class _DesktopRecipeCardState extends State<DesktopRecipeCard>
                             Center(
                               child: Icon(
                                 widget.icon,
-                                size: 64,
+                                size: 50,
                                 color: Colors.white.withOpacity(0.95),
                               ),
                             ),
@@ -138,7 +144,9 @@ class _DesktopRecipeCardState extends State<DesktopRecipeCard>
                                             ? Icons.favorite
                                             : Icons.favorite_border,
                                         onPressed: widget.onFavorite!,
-                                        color: widget.isFavorite ? Colors.red : null,
+                                        color: widget.isFavorite
+                                            ? Colors.red
+                                            : null,
                                       ),
                                     if (widget.onShare != null) ...[
                                       const SizedBox(width: 6),
@@ -154,57 +162,60 @@ class _DesktopRecipeCardState extends State<DesktopRecipeCard>
                         ),
                       ),
                       // Content section - Flexible
-                      Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Title
-                            Text(
-                              widget.title,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                height: 1.3,
-                                letterSpacing: -0.1,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (widget.subtitle != null) ...[
-                              const SizedBox(height: 4),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Title
                               Text(
-                                widget.subtitle!,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey.shade600,
-                                  height: 1.2,
+                                widget.title,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.3,
+                                  letterSpacing: -0.1,
                                 ),
-                                maxLines: 1,
+                                maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                            ],
-                            const SizedBox(height: 10),
-                            // Meta info row
-                            Row(
-                              children: [
-                                _MetaChip(
-                                  icon: Icons.access_time,
-                                  label: widget.time,
+                              if (widget.subtitle != null) ...[
+                                const SizedBox(height: 3),
+                                Text(
+                                  widget.subtitle!,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey.shade600,
+                                    height: 1.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(width: 6),
-                                _MetaChip(
-                                  icon: Icons.star,
-                                  label: widget.rating,
-                                  color: Colors.amber.shade600,
-                                ),
-                                const Spacer(),
-                                if (widget.difficulty != null)
-                                  _DifficultyBadge(difficulty: widget.difficulty!),
                               ],
-                            ),
-                          ],
+                              const Spacer(),
+                              // Meta info row
+                              Row(
+                                children: [
+                                  _MetaChip(
+                                    icon: Icons.access_time,
+                                    label: widget.time,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  _MetaChip(
+                                    icon: Icons.star,
+                                    label: widget.rating,
+                                    color: Colors.amber.shade600,
+                                  ),
+                                  const Spacer(),
+                                  if (widget.difficulty != null)
+                                    _DifficultyBadge(
+                                        difficulty: widget.difficulty!),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

@@ -28,7 +28,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/register',
         builder: (context, state) => const DesktopRegisterPage(),
       ),
-      
+
       // Main app with adaptive navigation
       ShellRoute(
         builder: (context, state, child) => MainNavigation(child: child),
@@ -49,17 +49,17 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/profile',
             builder: (context, state) => const DesktopProfilePage(),
           ),
+          GoRoute(
+            path: '/recipe/:slug',
+            builder: (context, state) {
+              final slug = state.pathParameters['slug']!;
+              return DesktopRecipeDetailPage(slug: slug);
+            },
+          ),
         ],
       ),
-      
-      // Recipe routes (outside navigation)
-      GoRoute(
-        path: '/recipe/:slug',
-        builder: (context, state) {
-          final slug = state.pathParameters['slug']!;
-          return DesktopRecipeDetailPage(slug: slug);
-        },
-      ),
+
+      // Cooking mode (outside navigation)
       GoRoute(
         path: '/cooking/:slug',
         builder: (context, state) => CookingModePage(

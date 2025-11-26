@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:connectflavour/shared/widgets/desktop_app_bar.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:connectflavour/core/services/recipe_service.dart';
+import 'dart:io';
 
 /// Desktop-optimized create recipe page with form layout
 class DesktopCreateRecipePage extends StatefulWidget {
@@ -18,12 +20,27 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
   final _prepTimeController = TextEditingController();
   final _cookTimeController = TextEditingController();
   final _servingsController = TextEditingController();
+  final _caloriesController = TextEditingController();
+  final _proteinController = TextEditingController();
+  final _carbsController = TextEditingController();
+  final _fatController = TextEditingController();
 
-  final List<String> _ingredients = [''];
-  final List<String> _instructions = [''];
+  final RecipeService _recipeService = RecipeService();
+  final ImagePicker _imagePicker = ImagePicker();
+
+  final List<TextEditingController> _ingredientControllers = [
+    TextEditingController()
+  ];
+  final List<TextEditingController> _instructionControllers = [
+    TextEditingController()
+  ];
+
+  String? _selectedImagePath;
+  String? _uploadedImageUrl;
   String _selectedCategory = 'Dinner';
   String _selectedDifficulty = 'Medium';
   bool _isLoading = false;
+  bool _isUploadingImage = false;
 
   @override
   void dispose() {
@@ -32,74 +49,220 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
     _prepTimeController.dispose();
     _cookTimeController.dispose();
     _servingsController.dispose();
+    _caloriesController.dispose();
+    _proteinController.dispose();
+    _carbsController.dispose();
+    _fatController.dispose();
+    for (var controller in _ingredientControllers) {
+      controller.dispose();
+    }
+    for (var controller in _instructionControllers) {
+      controller.dispose();
+    }
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImagePath = image.path;
+          _isUploadingImage = true;
+        });
+
+        // Upload image to server
+        final imageUrl = await _recipeService.uploadRecipeImage(image.path);
+
+        setState(() {
+          _uploadedImageUrl = imageUrl;
+          _isUploadingImage = false;
+        });
+
+        if (imageUrl == null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to upload image. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() => _isUploadingImage = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() => _isLoading = false);
-
-    if (mounted) {
+    if (_ingredientControllers.where((c) => c.text.isNotEmpty).isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Recipe created successfully!')),
+        const SnackBar(
+          content: Text('Please add at least one ingredient'),
+          backgroundColor: Colors.orange,
+        ),
       );
-      context.go('/home');
+      return;
+    }
+
+    if (_instructionControllers.where((c) => c.text.isNotEmpty).isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add at least one instruction step'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final recipeData = {
+        'title': _titleController.text,
+        'description': _descriptionController.text,
+        'category': _selectedCategory,
+        'difficulty': _selectedDifficulty,
+        'prep_time': int.tryParse(_prepTimeController.text) ?? 0,
+        'cook_time': int.tryParse(_cookTimeController.text) ?? 0,
+        'servings': int.tryParse(_servingsController.text) ?? 4,
+        'ingredients': _ingredientControllers
+            .map((c) => c.text)
+            .where((text) => text.isNotEmpty)
+            .toList(),
+        'instructions': _instructionControllers
+            .asMap()
+            .entries
+            .where((entry) => entry.value.text.isNotEmpty)
+            .map((entry) => {
+                  'step_number': entry.key + 1,
+                  'instruction': entry.value.text,
+                })
+            .toList(),
+        'image': _uploadedImageUrl,
+      };
+
+      // Add nutrition if provided
+      if (_caloriesController.text.isNotEmpty ||
+          _proteinController.text.isNotEmpty ||
+          _carbsController.text.isNotEmpty ||
+          _fatController.text.isNotEmpty) {
+        recipeData['nutrition'] = {
+          'calories': int.tryParse(_caloriesController.text) ?? 0,
+          'protein': int.tryParse(_proteinController.text) ?? 0,
+          'carbs': int.tryParse(_carbsController.text) ?? 0,
+          'fat': int.tryParse(_fatController.text) ?? 0,
+        };
+      }
+
+      final recipe = await _recipeService.createRecipe(recipeData);
+
+      setState(() => _isLoading = false);
+
+      if (recipe != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Recipe created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.go('/recipe/${recipe.slug}');
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to create recipe. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           // Desktop App Bar
           Container(
-            height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            height: 64,
+            padding: const EdgeInsets.symmetric(horizontal: 32),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
+              color: Colors.white,
               border: Border(
                 bottom: BorderSide(
-                  color: theme.dividerColor,
+                  color: Theme.of(context).dividerColor,
                   width: 1,
                 ),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.arrow_back),
+                  icon: const Icon(Icons.arrow_back, size: 22),
                   onPressed: () => context.pop(),
+                  tooltip: 'Back',
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 20),
                 const Text(
                   'Create New Recipe',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
                   ),
                 ),
                 const Spacer(),
-                DesktopToolbar(
-                  actions: [
-                    ToolbarAction(
-                      label: 'Save Draft',
-                      icon: Icons.drafts,
-                      onPressed: () {},
+                if (_isLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: CircularProgressIndicator(),
+                  )
+                else
+                  ElevatedButton.icon(
+                    onPressed: _handleSubmit,
+                    icon: const Icon(Icons.publish, size: 18),
+                    label: const Text('Publish Recipe'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
                     ),
-                    ToolbarAction(
-                      label: _isLoading ? 'Publishing...' : 'Publish',
-                      icon: Icons.publish,
-                      onPressed: _isLoading ? null : _handleSubmit,
-                    ),
-                  ],
-                ),
+                  ),
               ],
             ),
           ),
@@ -210,39 +373,61 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
         border: Border.all(
           color: Colors.grey.shade300,
           width: 2,
-          style: BorderStyle.solid,
         ),
+        image: _selectedImagePath != null
+            ? DecorationImage(
+                image: FileImage(File(_selectedImagePath!)),
+                fit: BoxFit.cover,
+              )
+            : null,
       ),
-      child: InkWell(
-        onTap: () {
-          // TODO: Implement image upload
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.cloud_upload, size: 64, color: Colors.grey.shade400),
-              const SizedBox(height: 16),
-              Text(
-                'Click to upload recipe image',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'PNG, JPG up to 10MB',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      child: _isUploadingImage
+          ? const Center(child: CircularProgressIndicator())
+          : InkWell(
+              onTap: _pickImage,
+              borderRadius: BorderRadius.circular(16),
+              child: _selectedImagePath == null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.cloud_upload,
+                              size: 64, color: Colors.grey.shade400),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Click to upload recipe image',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'PNG, JPG up to 10MB',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Stack(
+                      children: [
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.white),
+                            onPressed: _pickImage,
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.black54,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
     );
   }
 
@@ -262,7 +447,8 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
             const Spacer(),
             TextButton.icon(
               onPressed: () {
-                setState(() => _ingredients.add(''));
+                setState(
+                    () => _ingredientControllers.add(TextEditingController()));
               },
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Add Ingredient'),
@@ -270,14 +456,16 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
           ],
         ),
         const SizedBox(height: 12),
-        ..._ingredients.asMap().entries.map((entry) {
+        ..._ingredientControllers.asMap().entries.map((entry) {
           final index = entry.key;
+          final controller = entry.value;
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
                 Expanded(
                   child: TextFormField(
+                    controller: controller,
                     decoration: InputDecoration(
                       hintText: 'e.g., 2 cups flour',
                       border: OutlineInputBorder(
@@ -288,16 +476,18 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
                         vertical: 12,
                       ),
                     ),
-                    onChanged: (value) => _ingredients[index] = value,
                   ),
                 ),
-                if (_ingredients.length > 1) ...[
+                if (_ingredientControllers.length > 1) ...[
                   const SizedBox(width: 8),
                   IconButton(
                     icon: const Icon(Icons.delete_outline),
                     color: Colors.red,
                     onPressed: () {
-                      setState(() => _ingredients.removeAt(index));
+                      setState(() {
+                        controller.dispose();
+                        _ingredientControllers.removeAt(index);
+                      });
                     },
                   ),
                 ],
@@ -325,7 +515,8 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
             const Spacer(),
             TextButton.icon(
               onPressed: () {
-                setState(() => _instructions.add(''));
+                setState(
+                    () => _instructionControllers.add(TextEditingController()));
               },
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Add Step'),
@@ -333,8 +524,9 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
           ],
         ),
         const SizedBox(height: 12),
-        ..._instructions.asMap().entries.map((entry) {
+        ..._instructionControllers.asMap().entries.map((entry) {
           final index = entry.key;
+          final controller = entry.value;
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
@@ -361,6 +553,7 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextFormField(
+                    controller: controller,
                     decoration: InputDecoration(
                       hintText: 'Describe this step...',
                       border: OutlineInputBorder(
@@ -369,16 +562,18 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
                       contentPadding: const EdgeInsets.all(12),
                     ),
                     maxLines: 2,
-                    onChanged: (value) => _instructions[index] = value,
                   ),
                 ),
-                if (_instructions.length > 1) ...[
+                if (_instructionControllers.length > 1) ...[
                   const SizedBox(width: 8),
                   IconButton(
                     icon: const Icon(Icons.delete_outline),
                     color: Colors.red,
                     onPressed: () {
-                      setState(() => _instructions.removeAt(index));
+                      setState(() {
+                        controller.dispose();
+                        _instructionControllers.removeAt(index);
+                      });
                     },
                   ),
                 ],
@@ -391,7 +586,6 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
   }
 
   Widget _buildMetadataCard() {
-    final theme = Theme.of(context);
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -453,6 +647,14 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
                 ),
               ),
               keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value != null && value.isNotEmpty) {
+                  if (int.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
 
@@ -466,6 +668,14 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
                 ),
               ),
               keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value != null && value.isNotEmpty) {
+                  if (int.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 16),
 
@@ -479,6 +689,14 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
                 ),
               ),
               keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value != null && value.isNotEmpty) {
+                  if (int.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                }
+                return null;
+              },
             ),
           ],
         ),
@@ -505,20 +723,21 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 20),
-            _buildNutritionField('Calories', 'kcal'),
+            _buildNutritionField('Calories', 'kcal', _caloriesController),
             const SizedBox(height: 12),
-            _buildNutritionField('Protein', 'g'),
+            _buildNutritionField('Protein', 'g', _proteinController),
             const SizedBox(height: 12),
-            _buildNutritionField('Carbs', 'g'),
+            _buildNutritionField('Carbs', 'g', _carbsController),
             const SizedBox(height: 12),
-            _buildNutritionField('Fat', 'g'),
+            _buildNutritionField('Fat', 'g', _fatController),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNutritionField(String label, String unit) {
+  Widget _buildNutritionField(
+      String label, String unit, TextEditingController controller) {
     return Row(
       children: [
         Expanded(
@@ -527,6 +746,7 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
         SizedBox(
           width: 100,
           child: TextFormField(
+            controller: controller,
             decoration: InputDecoration(
               suffixText: unit,
               border: OutlineInputBorder(
@@ -538,6 +758,14 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
               ),
             ),
             keyboardType: TextInputType.number,
+            validator: (value) {
+              if (value != null && value.isNotEmpty) {
+                if (int.tryParse(value) == null) {
+                  return 'Invalid';
+                }
+              }
+              return null;
+            },
           ),
         ),
       ],
