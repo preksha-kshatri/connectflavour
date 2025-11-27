@@ -24,6 +24,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
   List<Recipe> _favoriteRecipes = [];
   List<Activity> _activities = [];
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -33,7 +34,10 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
   }
 
   Future<void> _loadUserData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
       final user = await _userService.getCurrentUser();
@@ -50,7 +54,10 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
       });
     } catch (e) {
       print('Error loading user data: $e');
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
     }
   }
 
@@ -72,6 +79,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
 
     if (_user == null) {
       return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -79,7 +87,18 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
               const Icon(Icons.error_outline, size: 64, color: Colors.grey),
               const SizedBox(height: 16),
               const Text('Unable to load profile'),
-              const SizedBox(height: 8),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loadUserData,
                 child: const Text('Retry'),
@@ -135,137 +154,205 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
             ),
           ),
 
-          // Profile Header
+          // Profile Header - Improved Design
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              border: Border(
-                bottom: BorderSide(
-                  color: theme.dividerColor,
-                  width: 1,
-                ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF2E7D32),
+                  const Color(0xFF1B5E20),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                // Avatar
-                Stack(
-                  children: [
-                    Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(70),
-                        border: Border.all(
-                          color: theme.colorScheme.primary,
-                          width: 3,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
+              child: Row(
+                children: [
+                  // Avatar with improved styling
+                  Stack(
+                    children: [
+                      Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(70),
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                          image: _user!.profilePicture != null
+                              ? DecorationImage(
+                                  image: NetworkImage(_user!.profilePicture!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                         ),
-                        image: _user!.avatar != null
-                            ? DecorationImage(
-                                image: NetworkImage(_user!.avatar!),
-                                fit: BoxFit.cover,
+                        child: _user!.profilePicture == null
+                            ? Icon(
+                                Icons.person,
+                                size: 60,
+                                color: Colors.grey.shade400,
                               )
                             : null,
                       ),
-                      child: _user!.avatar == null
-                          ? Icon(
-                              Icons.person,
-                              size: 60,
-                              color: theme.colorScheme.primary,
-                            )
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: IconButton(
-                        icon: const Icon(Icons.camera_alt, size: 20),
-                        onPressed: _changeAvatar,
-                        style: IconButton.styleFrom(
-                          backgroundColor: theme.colorScheme.primary,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 32),
-                // User info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _user!.fullName,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.5,
-                          height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _user!.email,
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      if (_user!.bio != null) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          _user!.bio!,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade700,
-                            height: 1.5,
+                      Positioned(
+                        bottom: 5,
+                        right: 5,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.camera_alt, size: 18),
+                            onPressed: _changeAvatar,
+                            style: IconButton.styleFrom(
+                              backgroundColor: const Color(0xFF2E7D32),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.all(8),
+                            ),
                           ),
                         ),
-                      ],
+                      ),
                     ],
                   ),
-                ),
-                // Stats
-                Row(
-                  children: [
-                    _buildStatCard('Recipes', '${_user!.recipesCount}',
-                        Icons.receipt_long),
-                    const SizedBox(width: 20),
-                    _buildStatCard(
-                        'Followers', '${_user!.followersCount}', Icons.people),
-                    const SizedBox(width: 20),
-                    _buildStatCard('Following', '${_user!.followingCount}',
-                        Icons.person_add),
-                  ],
-                ),
-              ],
+                  const SizedBox(width: 32),
+                  // User info with improved typography
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _user!.displayName,
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.5,
+                            height: 1.2,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.email,
+                                size: 16, color: Colors.white70),
+                            const SizedBox(width: 6),
+                            Text(
+                              _user!.email,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_user!.bio != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            _user!.bio!,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFFE8F5E9),
+                              height: 1.5,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today,
+                                size: 14, color: Colors.white60),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Joined ${_formatJoinDate(_user!.dateJoined)}',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.white60,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Stats with improved cards
+                  Row(
+                    children: [
+                      _buildStatCard('Recipes', '${_user!.recipesCount}',
+                          Icons.restaurant),
+                      const SizedBox(width: 16),
+                      _buildStatCard('Followers', '${_user!.followersCount}',
+                          Icons.people),
+                      const SizedBox(width: 16),
+                      _buildStatCard('Following', '${_user!.followingCount}',
+                          Icons.person_add_alt),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
 
-          // Tabs
+          // Tabs with improved design
           Container(
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
-              border: Border(
-                bottom: BorderSide(
-                  color: theme.dividerColor,
-                  width: 1,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
-              ),
+              ],
             ),
             child: TabBar(
               controller: _tabController,
-              labelColor: theme.colorScheme.primary,
+              labelColor: const Color(0xFF2E7D32),
               unselectedLabelColor: Colors.grey.shade600,
-              indicatorColor: theme.colorScheme.primary,
+              indicatorColor: const Color(0xFF2E7D32),
+              indicatorWeight: 3,
+              labelStyle: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
               tabs: const [
-                Tab(text: 'My Recipes'),
-                Tab(text: 'Favorites'),
-                Tab(text: 'Activity'),
+                Tab(
+                  icon: Icon(Icons.restaurant),
+                  text: 'My Recipes',
+                ),
+                Tab(
+                  icon: Icon(Icons.favorite),
+                  text: 'Favorites',
+                ),
+                Tab(
+                  icon: Icon(Icons.timeline),
+                  text: 'Activity',
+                ),
               ],
             ),
           ),
@@ -320,30 +407,46 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
   }
 
   Widget _buildStatCard(String label, String value, IconData icon) {
-    final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: 140,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, size: 28, color: theme.colorScheme.primary),
-          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2E7D32).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, size: 28, color: const Color(0xFF2E7D32)),
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1A1A),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 13,
               color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -357,17 +460,53 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long, size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E7D32).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: const Icon(
+                Icons.restaurant,
+                size: 80,
+                color: Color(0xFF2E7D32),
+              ),
+            ),
+            const SizedBox(height: 24),
             const Text(
               'No recipes yet',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1A1A1A),
+              ),
             ),
             const SizedBox(height: 8),
+            Text(
+              'Start sharing your culinary creations with the world',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () => context.go('/create'),
               icon: const Icon(Icons.add),
               label: const Text('Create Your First Recipe'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2E7D32),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
@@ -393,17 +532,53 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.favorite_outline, size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.pink.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: const Icon(
+                Icons.favorite,
+                size: 80,
+                color: Colors.pink,
+              ),
+            ),
+            const SizedBox(height: 24),
             const Text(
               'No favorites yet',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1A1A1A),
+              ),
             ),
             const SizedBox(height: 8),
+            Text(
+              'Discover and save recipes you love',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () => context.go('/home'),
               icon: const Icon(Icons.explore),
               label: const Text('Explore Recipes'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2E7D32),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
@@ -426,15 +601,38 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
 
   Widget _buildActivityTab() {
     if (_activities.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.timeline, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: const Icon(
+                Icons.timeline,
+                size: 80,
+                color: Colors.blue,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
               'No activity yet',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1A1A1A),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Your recipe journey starts here',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
             ),
           ],
         ),
@@ -450,78 +648,133 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
 
   Widget _buildRecipeCard(Recipe recipe) {
     return Card(
-      elevation: 2,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
       ),
       child: InkWell(
         onTap: () => context.go('/recipe/${recipe.slug}'),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
-            Container(
-              height: 180,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
+            // Image with overlay gradient
+            Stack(
+              children: [
+                Container(
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                    image: recipe.image != null
+                        ? DecorationImage(
+                            image: NetworkImage(recipe.image!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: recipe.image == null
+                      ? Center(
+                          child: Icon(
+                            Icons.restaurant,
+                            size: 48,
+                            color: Colors.grey.shade400,
+                          ),
+                        )
+                      : null,
                 ),
-                image: recipe.image != null
-                    ? DecorationImage(
-                        image: NetworkImage(recipe.image!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: recipe.image == null
-                  ? Center(
-                      child: Icon(
-                        Icons.restaurant,
-                        size: 48,
-                        color: Colors.grey.shade500,
-                      ),
-                    )
-                  : null,
+                // Favorite button overlay
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.favorite_border, size: 18),
+                      onPressed: () {},
+                      color: Colors.grey.shade700,
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
+                ),
+              ],
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     recipe.title,
                     style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     recipe.description,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 13,
                       color: Colors.grey.shade600,
+                      height: 1.4,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(Icons.star, size: 14, color: Colors.amber),
-                      const SizedBox(width: 4),
-                      Text('${recipe.rating.toStringAsFixed(1)}',
-                          style: const TextStyle(fontSize: 12)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.star,
+                                size: 14, color: Colors.amber),
+                            const SizedBox(width: 4),
+                            Text(
+                              recipe.rating.toStringAsFixed(1),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       const Spacer(),
                       Icon(Icons.schedule,
-                          size: 14, color: Colors.grey.shade600),
+                          size: 14, color: Colors.grey.shade500),
                       const SizedBox(width: 4),
-                      Text('${recipe.totalTime}m',
-                          style: const TextStyle(fontSize: 12)),
+                      Text(
+                        '${recipe.totalTime}m',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -535,20 +788,45 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
 
   Widget _buildActivityItem(Activity activity) {
     return Card(
+      elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor:
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Icon(
             _getActivityIcon(activity.type),
-            color: Theme.of(context).colorScheme.primary,
+            color: const Color(0xFF2E7D32),
+            size: 24,
           ),
         ),
-        title: Text(activity.description),
-        subtitle: Text(activity.getTimeAgo()),
+        title: Text(
+          activity.description,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            activity.getTimeAgo(),
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ),
         trailing: IconButton(
-          icon: const Icon(Icons.more_vert),
+          icon: Icon(Icons.more_vert, color: Colors.grey.shade600),
           onPressed: () {},
         ),
       ),

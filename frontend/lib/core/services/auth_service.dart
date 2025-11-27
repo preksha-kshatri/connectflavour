@@ -12,6 +12,8 @@ class AuthService {
     required String password,
   }) async {
     try {
+      print('🔐 Attempting login with username: $username');
+
       final response = await _apiService.post(
         '/auth/login/',
         data: {
@@ -19,6 +21,9 @@ class AuthService {
           'password': password,
         },
       );
+
+      print('✅ Login response received: ${response.statusCode}');
+      print('📦 Response data: ${response.data}');
 
       // Store tokens (backend returns nested tokens object)
       final tokens = response.data['tokens'];
@@ -28,12 +33,15 @@ class AuthService {
       await StorageService.setString(AppConfig.accessTokenKey, accessToken);
       await StorageService.setString(AppConfig.refreshTokenKey, refreshToken);
 
+      print('💾 Tokens stored successfully');
+
       return {
         'success': true,
         'user': User.fromJson(response.data['user']),
       };
-    } catch (e) {
-      print('Login error: $e');
+    } catch (e, stackTrace) {
+      print('❌ Login error: $e');
+      print('📍 Stack trace: $stackTrace');
       return {
         'success': false,
         'error': e.toString(),

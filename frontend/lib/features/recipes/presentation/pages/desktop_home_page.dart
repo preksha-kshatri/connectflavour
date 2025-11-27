@@ -134,11 +134,11 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
         children: [
           Row(
             children: [
-              Expanded(
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Discover Recipes',
                       style: TextStyle(
                         fontSize: 32,
@@ -146,19 +146,19 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
                         color: Color(0xFF1A1A1A),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(
                       'Explore delicious recipes from around the world',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey[600],
+                        color: Color(0xFF757575),
                       ),
                     ),
                   ],
                 ),
               ),
               ElevatedButton.icon(
-                onPressed: () => context.go('/recipes/new'),
+                onPressed: () => context.go('/create'),
                 icon: const Icon(Icons.add),
                 label: const Text('Create Recipe'),
                 style: ElevatedButton.styleFrom(
@@ -181,33 +181,38 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
   }
 
   Widget _buildSearchAndFilters() {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          flex: 2,
-          child: TextField(
-            onChanged: (value) {
-              _searchQuery = value;
-              _applyFilters();
-            },
-            decoration: InputDecoration(
-              hintText: 'Search recipes...',
-              prefixIcon: const Icon(Icons.search, color: Color(0xFF2E7D32)),
-              filled: true,
-              fillColor: const Color(0xFFF8FAF9),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        TextField(
+          onChanged: (value) {
+            _searchQuery = value;
+            _applyFilters();
+          },
+          decoration: InputDecoration(
+            hintText: 'Search recipes...',
+            prefixIcon: const Icon(Icons.search, color: Color(0xFF2E7D32)),
+            filled: true,
+            fillColor: const Color(0xFFF8FAF9),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
             ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
-        const SizedBox(width: 16),
-        _buildCategoryFilter(),
-        const SizedBox(width: 16),
-        _buildDifficultyFilter(),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildCategoryFilter(),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildDifficultyFilter(),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -223,10 +228,12 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAF9),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE0E0E0)),
       ),
       child: DropdownButton<String>(
         value: _selectedCategory,
         underline: const SizedBox(),
+        isExpanded: true,
         icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF2E7D32)),
         items: categories.map((category) {
           return DropdownMenuItem(
@@ -252,10 +259,12 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAF9),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE0E0E0)),
       ),
       child: DropdownButton<String>(
         value: _selectedDifficulty,
         underline: const SizedBox(),
+        isExpanded: true,
         icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF2E7D32)),
         items: difficulties.map((difficulty) {
           return DropdownMenuItem(
@@ -300,17 +309,12 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${_filteredRecipes.length} recipes found',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
+          Text(
+            '${_filteredRecipes.length} recipes found',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
           ),
           const SizedBox(height: 24),
           GridView.builder(
@@ -335,7 +339,9 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
 
   Widget _buildRecipeCard(Recipe recipe) {
     return InkWell(
-      onTap: () => context.go('/recipes/${recipe.slug}'),
+      onTap: () {
+        context.go('/recipe/${recipe.slug}');
+      },
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
@@ -352,81 +358,113 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (recipe.image != null)
-              ClipRRect(
+            Container(
+              height: 180,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E7D32).withOpacity(0.1),
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.network(
-                  recipe.image!,
-                  width: double.infinity,
-                  height: 180,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: double.infinity,
-                      height: 180,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.restaurant,
-                          size: 64, color: Colors.grey),
-                    );
-                  },
-                ),
               ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    recipe.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.access_time,
-                          size: 16, color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${recipe.prepTime + recipe.cookTime} min',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              child: recipe.image != null && recipe.image!.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16)),
+                      child: Image.network(
+                        recipe.image!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Icon(
+                              Icons.restaurant,
+                              size: 48,
+                              color: const Color(0xFF2E7D32).withOpacity(0.5),
+                            ),
+                          );
+                        },
                       ),
-                      const Spacer(),
-                      if (recipe.rating > 0) ...[
-                        Icon(Icons.star, size: 16, color: Colors.amber[700]),
+                    )
+                  : Center(
+                      child: Icon(
+                        Icons.restaurant,
+                        size: 48,
+                        color: const Color(0xFF2E7D32).withOpacity(0.5),
+                      ),
+                    ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      recipe.title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2E7D32).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            recipe.category,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF2E7D32),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          recipe.difficulty,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time,
+                            size: 16, color: Color(0xFF757575)),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${recipe.prepTime + recipe.cookTime} min',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF757575),
+                          ),
+                        ),
+                        const Spacer(),
+                        const Icon(Icons.star,
+                            size: 16, color: Color(0xFFFFA000)),
                         const SizedBox(width: 4),
                         Text(
                           recipe.rating.toStringAsFixed(1),
-                          style:
-                              TextStyle(fontSize: 14, color: Colors.grey[600]),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF757575),
+                          ),
                         ),
                       ],
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2E7D32).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
-                      recipe.category,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF2E7D32),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

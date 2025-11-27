@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:connectflavour/core/theme/app_theme.dart';
-import 'package:connectflavour/core/services/auth_service.dart';
+// import 'package:connectflavour/core/services/auth_service.dart'; // Temporarily disabled
 import 'package:flutter/foundation.dart';
 
 class SplashPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class _SplashPageState extends State<SplashPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
-  final _authService = AuthService();
+  // final _authService = AuthService(); // Temporarily disabled for testing
 
   @override
   void initState() {
@@ -55,20 +55,23 @@ class _SplashPageState extends State<SplashPage>
     await Future.delayed(const Duration(seconds: 3));
 
     if (mounted) {
-      // Check if user is logged in
-      final isLoggedIn = await _authService.isLoggedIn();
+      // TEMPORARY: Skip authentication for testing
+      context.go('/home');
 
-      if (isLoggedIn) {
-        // Verify token is still valid
-        final isValid = await _authService.verifyToken();
-        if (isValid) {
-          context.go('/home');
-        } else {
-          context.go('/login');
-        }
-      } else {
-        context.go('/login');
-      }
+      // TODO: Re-enable authentication
+      // Check if user is logged in
+      // final isLoggedIn = await _authService.isLoggedIn();
+      // if (isLoggedIn) {
+      //   // Verify token is still valid
+      //   final isValid = await _authService.verifyToken();
+      //   if (isValid) {
+      //     context.go('/home');
+      //   } else {
+      //     context.go('/login');
+      //   }
+      // } else {
+      //   context.go('/login');
+      // }
     }
   }
 

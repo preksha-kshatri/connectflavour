@@ -44,14 +44,26 @@ class Recipe {
   });
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
+    // Handle author - can be object or string
+    String authorId = '';
+    String authorName = '';
+    if (json['author'] is Map) {
+      final authorObj = json['author'] as Map<String, dynamic>;
+      authorId = authorObj['id']?.toString() ?? '';
+      authorName = authorObj['full_name'] ?? authorObj['username'] ?? '';
+    } else if (json['author'] is String) {
+      authorId = json['author'];
+      authorName = json['author_name'] ?? '';
+    }
+
     return Recipe(
       id: json['id'] ?? 0,
       title: json['title'] ?? '',
       slug: json['slug'] ?? '',
       description: json['description'] ?? '',
-      image: json['image'],
-      category: json['category'] ?? '',
-      difficulty: json['difficulty'] ?? 'Medium',
+      image: json['featured_image'] ?? json['image'],
+      category: json['category_name'] ?? json['category'] ?? '',
+      difficulty: json['difficulty_name'] ?? json['difficulty'] ?? 'Medium',
       prepTime: json['prep_time'] ?? 0,
       cookTime: json['cook_time'] ?? 0,
       servings: json['servings'] ?? 4,
@@ -66,11 +78,11 @@ class Recipe {
       nutrition: json['nutrition'] != null
           ? NutritionInfo.fromJson(json['nutrition'])
           : null,
-      author: json['author'] ?? '',
-      authorName: json['author_name'] ?? '',
-      rating: (json['rating'] ?? 0.0).toDouble(),
-      reviewCount: json['review_count'] ?? 0,
-      isFavorite: json['is_favorite'] ?? false,
+      author: authorId,
+      authorName: authorName,
+      rating: _parseDouble(json['average_rating'] ?? json['rating'] ?? 0.0),
+      reviewCount: json['rating_count'] ?? json['review_count'] ?? 0,
+      isFavorite: json['is_saved'] ?? json['is_favorite'] ?? false,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
@@ -78,6 +90,13 @@ class Recipe {
           ? DateTime.parse(json['updated_at'])
           : DateTime.now(),
     );
+  }
+
+  static double _parseDouble(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 
   Map<String, dynamic> toJson() {

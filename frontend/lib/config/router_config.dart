@@ -38,6 +38,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const DesktopHomePage(),
           ),
           GoRoute(
+            path: '/recipes',
+            builder: (context, state) => const DesktopHomePage(),
+          ),
+          GoRoute(
             path: '/categories',
             builder: (context, state) => const DesktopCategoriesPage(),
           ),

@@ -9,10 +9,11 @@ class UserService {
   Future<User?> getCurrentUser() async {
     try {
       final response = await _apiService.get('/auth/profile/');
+      print('User profile response: ${response.data}');
       return User.fromJson(response.data);
     } catch (e) {
-      print('Error fetching user: $e');
-      return null;
+      print('Error fetching user profile: $e');
+      rethrow; // Rethrow to let the UI handle the error
     }
   }
 

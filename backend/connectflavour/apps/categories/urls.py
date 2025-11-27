@@ -8,8 +8,8 @@ from .views import (
 
 urlpatterns = [
     # Categories
-    path('categories/', CategoryListView.as_view(), name='category-list'),
-    path('categories/<slug:slug>/',
+    path('', CategoryListView.as_view(), name='category-list'),
+    path('<slug:slug>/',
          CategoryDetailView.as_view(), name='category-detail'),
 
     # Tags

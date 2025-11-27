@@ -243,7 +243,7 @@ class _DesktopCategoriesPageState extends State<DesktopCategoriesPage> {
 
     return InkWell(
       onTap: () {
-        context.go('/recipes?category=${category.slug}');
+        context.go('/home?category=${category.slug}');
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(

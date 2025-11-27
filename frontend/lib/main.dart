@@ -55,7 +55,8 @@ class ConnectFlavourApp extends ConsumerWidget {
 
     return ScreenUtilInit(
       // Use desktop design size for native desktop, mobile for web/mobile
-      designSize: isNativeDesktop ? const Size(1200, 800) : const Size(375, 812),
+      designSize:
+          isNativeDesktop ? const Size(1200, 800) : const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
@@ -64,7 +65,7 @@ class ConnectFlavourApp extends ConsumerWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.system,
+          themeMode: ThemeMode.light, // Force light theme for consistency
           routerConfig: router,
         );
       },

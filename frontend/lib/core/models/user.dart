@@ -4,13 +4,18 @@ class User {
   final String email;
   final String? firstName;
   final String? lastName;
+  final String? fullName;
   final String? bio;
-  final String? avatar;
+  final String? profilePicture;
   final String? location;
+  final bool isVerified;
   final DateTime dateJoined;
   final int recipesCount;
   final int followersCount;
   final int followingCount;
+  final List<String>? dietaryPreferences;
+  final List<String>? preferredCategories;
+  final Map<String, dynamic>? profile;
 
   User({
     required this.id,
@@ -18,13 +23,18 @@ class User {
     required this.email,
     this.firstName,
     this.lastName,
+    this.fullName,
     this.bio,
-    this.avatar,
+    this.profilePicture,
     this.location,
+    this.isVerified = false,
     required this.dateJoined,
     this.recipesCount = 0,
     this.followersCount = 0,
     this.followingCount = 0,
+    this.dietaryPreferences,
+    this.preferredCategories,
+    this.profile,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -34,15 +44,24 @@ class User {
       email: json['email'] ?? '',
       firstName: json['first_name'],
       lastName: json['last_name'],
+      fullName: json['full_name'],
       bio: json['bio'],
-      avatar: json['avatar'],
+      profilePicture: json['profile_picture'],
       location: json['location'],
+      isVerified: json['is_verified'] ?? false,
       dateJoined: json['date_joined'] != null
           ? DateTime.parse(json['date_joined'])
           : DateTime.now(),
       recipesCount: json['recipes_count'] ?? 0,
       followersCount: json['followers_count'] ?? 0,
       followingCount: json['following_count'] ?? 0,
+      dietaryPreferences: json['dietary_preferences'] != null
+          ? List<String>.from(json['dietary_preferences'])
+          : null,
+      preferredCategories: json['preferred_categories'] != null
+          ? List<String>.from(json['preferred_categories'])
+          : null,
+      profile: json['profile'],
     );
   }
 
@@ -53,17 +72,23 @@ class User {
       'email': email,
       'first_name': firstName,
       'last_name': lastName,
+      'full_name': fullName,
       'bio': bio,
-      'avatar': avatar,
+      'profile_picture': profilePicture,
       'location': location,
+      'is_verified': isVerified,
       'date_joined': dateJoined.toIso8601String(),
       'recipes_count': recipesCount,
       'followers_count': followersCount,
       'following_count': followingCount,
+      'dietary_preferences': dietaryPreferences,
+      'preferred_categories': preferredCategories,
+      'profile': profile,
     };
   }
 
-  String get fullName {
+  String get displayName {
+    if (fullName != null && fullName!.isNotEmpty) return fullName!;
     if (firstName != null && lastName != null) {
       return '$firstName $lastName';
     }

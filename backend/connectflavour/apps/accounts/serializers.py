@@ -84,7 +84,7 @@ class UserLoginSerializer(serializers.Serializer):
     """
     Serializer for user login
     """
-    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True)
     password = serializers.CharField(
         required=True,
         style={'input_type': 'password'}
@@ -94,13 +94,14 @@ class UserLoginSerializer(serializers.Serializer):
         """
         Validate user credentials
         """
-        email = attrs.get('email')
+        username = attrs.get('username')
         password = attrs.get('password')
 
-        if email and password:
+        if username and password:
+            # The custom authentication backend will handle both username and email
             user = authenticate(
                 request=self.context.get('request'),
-                username=email,
+                username=username,
                 password=password
             )
 
@@ -118,7 +119,7 @@ class UserLoginSerializer(serializers.Serializer):
             return attrs
         else:
             raise serializers.ValidationError(
-                'Must include "email" and "password".'
+                'Must include "username" and "password".'
             )
 
 
