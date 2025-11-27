@@ -1,6 +1,7 @@
 # Static Mode Bug Fixes
 
 ## Overview
+
 Two critical bugs were discovered and fixed that prevented the Categories and Create Recipe pages from displaying on web.
 
 ---
@@ -8,10 +9,13 @@ Two critical bugs were discovered and fixed that prevented the Categories and Cr
 ## Bug #1: Categories Page Icon Mapping Error
 
 ### Problem
+
 Categories page showed blank screen with no visible errors in compile logs.
 
 ### Root Cause
+
 1. Categories in `static_data.dart` use emoji strings in the `icon` field:
+
    ```dart
    icon: '🍳'  // breakfast
    icon: '🥗'  // lunch
@@ -19,11 +23,13 @@ Categories page showed blank screen with no visible errors in compile logs.
    ```
 
 2. The `_buildCategoryCard` method tried to use these emoji strings directly:
+
    ```dart
    _getIconData(category.icon ?? 'restaurant')  // ❌ Passes emoji string
    ```
 
 3. The `_iconMap` dictionary expected category slugs, not emojis:
+
    ```dart
    final _iconMap = {
      'breakfast': Icons.restaurant,
@@ -35,9 +41,11 @@ Categories page showed blank screen with no visible errors in compile logs.
 4. When `_getIconData()` received an emoji string like '🍳', it couldn't find it in the map, causing a runtime error.
 
 ### Solution
+
 Changed the icon mapping to use `category.slug` instead of `category.icon`:
 
 **Before:**
+
 ```dart
 CircleAvatar(
   backgroundColor: _getCategoryColor(index),
@@ -51,6 +59,7 @@ CircleAvatar(
 ```
 
 **After:**
+
 ```dart
 CircleAvatar(
   backgroundColor: _getCategoryColor(index),
@@ -64,6 +73,7 @@ CircleAvatar(
 ```
 
 Also added missing 'snacks' entry to `_iconMap`:
+
 ```dart
 final _iconMap = {
   'breakfast': Icons.restaurant,
@@ -78,6 +88,7 @@ final _iconMap = {
 ```
 
 ### Files Modified
+
 - `lib/features/categories/presentation/pages/desktop_categories_page.dart`
 
 ---
@@ -85,15 +96,19 @@ final _iconMap = {
 ## Bug #2: Create Recipe Page Web Compatibility Error
 
 ### Problem
+
 Create recipe page showed blank screen on web platform.
 
 ### Root Cause
+
 1. Page imported `dart:io` which is **not available on web**:
+
    ```dart
    import 'dart:io';  // ❌ Web incompatible
    ```
 
 2. Used `File` class to display selected images:
+
    ```dart
    image: FileImage(File(_selectedImagePath!)),  // ❌ Requires dart:io
    ```
@@ -103,6 +118,7 @@ Create recipe page showed blank screen on web platform.
 ### Solution
 
 **Step 1:** Removed `dart:io` import
+
 ```dart
 // Before
 import 'dart:io';  // ❌
@@ -112,6 +128,7 @@ import 'dart:io';  // ❌
 ```
 
 **Step 2:** Changed image display to use NetworkImage with uploaded URL
+
 ```dart
 // Before
 image: _selectedImagePath != null
@@ -131,6 +148,7 @@ image: _uploadedImageUrl != null
 ```
 
 **Step 3:** Removed unused `_selectedImagePath` field
+
 ```dart
 // Removed
 String? _selectedImagePath;  // ❌
@@ -140,6 +158,7 @@ String? _uploadedImageUrl;  // ✅ Keep this
 ```
 
 **Step 4:** Updated `_pickImage()` to not set removed field
+
 ```dart
 // Before
 if (image != null) {
@@ -160,6 +179,7 @@ if (image != null) {
 ```
 
 ### Files Modified
+
 - `lib/features/recipes/presentation/pages/desktop_create_recipe_page.dart`
 
 ---
@@ -167,18 +187,20 @@ if (image != null) {
 ## Testing Results
 
 ### Before Fixes
+
 ❌ Categories page: Blank screen  
 ❌ Create recipe page: Blank screen  
 ✅ Home page: Working  
 ✅ Recipe detail page: Working  
-✅ Profile page: Working  
+✅ Profile page: Working
 
 ### After Fixes
+
 ✅ Categories page: Working - displays 8 categories in grid  
 ✅ Create recipe page: Working - full form with web-compatible image upload  
 ✅ Home page: Working  
 ✅ Recipe detail page: Working  
-✅ Profile page: Working  
+✅ Profile page: Working
 
 **Status:** 5/5 pages working ✅
 
@@ -187,16 +209,20 @@ if (image != null) {
 ## Key Lessons
 
 ### Lesson 1: Data Field Usage
+
 When data fields contain presentation values (like emoji icons), don't use them directly for logic. Use semantic identifiers (like slugs) instead.
 
 ### Lesson 2: Web Platform Compatibility
+
 - **Never import `dart:io` in Flutter web code**
 - Use conditional imports or platform checks when file system access is needed
 - Prefer `NetworkImage` over `FileImage` for web compatibility
 - Use `kIsWeb` from `package:flutter/foundation.dart` for platform detection
 
 ### Lesson 3: Runtime vs Compile Errors
+
 Both bugs had **no compile errors** but caused runtime failures:
+
 - Icon mapping failed at runtime when emoji couldn't be found in map
 - `dart:io` import prevented file from loading on web platform
 
@@ -207,14 +233,18 @@ Always test on target platform (web) to catch these issues.
 ## Files Summary
 
 ### Categories Page Fix
+
 **File:** `lib/features/categories/presentation/pages/desktop_categories_page.dart`  
 **Changes:**
+
 1. Line ~170-300: Changed `category.icon` to `category.slug` in `_buildCategoryCard()`
 2. Added 'snacks' to `_iconMap` dictionary
 
 ### Create Recipe Page Fix
+
 **File:** `lib/features/recipes/presentation/pages/desktop_create_recipe_page.dart`  
 **Changes:**
+
 1. Line 1-7: Removed `import 'dart:io';`
 2. Line ~40: Removed `String? _selectedImagePath;` field
 3. Line ~77: Removed `_selectedImagePath = image.path;` from `_pickImage()`

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/models/recipe.dart';
 import '../../../../core/services/static_recipe_service.dart';
+import '../widgets/cooking_timer_widget.dart';
 
 /// Desktop-optimized recipe detail page
 class DesktopRecipeDetailPage extends StatefulWidget {
@@ -361,35 +362,45 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage> {
             ..._recipe!.instructions.map((step) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 24),
-                child: Row(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2E7D32),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${step.stepNumber}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2E7D32),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${step.stepNumber}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          step.instruction,
-                          style: const TextStyle(fontSize: 15, height: 1.6),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              step.instruction,
+                              style: const TextStyle(fontSize: 15, height: 1.6),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
+                    // Add timer for each step
+                    CookingTimerWidget(
+                      stepNumber: step.stepNumber,
+                      suggestedMinutes: _getSuggestedTimeForStep(step),
                     ),
                   ],
                 ),
@@ -399,5 +410,27 @@ class _DesktopRecipeDetailPageState extends State<DesktopRecipeDetailPage> {
         ),
       ),
     );
+  }
+
+  // Helper method to suggest timer duration based on step content
+  int _getSuggestedTimeForStep(RecipeStep step) {
+    final instruction = step.instruction.toLowerCase();
+    
+    // Parse time from instruction if mentioned
+    if (instruction.contains('15 min') || instruction.contains('15-min')) return 15;
+    if (instruction.contains('10 min') || instruction.contains('10-min')) return 10;
+    if (instruction.contains('5 min') || instruction.contains('5-min')) return 5;
+    if (instruction.contains('3 min') || instruction.contains('3-min')) return 3;
+    if (instruction.contains('20 min') || instruction.contains('20-min')) return 20;
+    if (instruction.contains('30 min') || instruction.contains('30-min')) return 30;
+    
+    // Suggest based on cooking action keywords
+    if (instruction.contains('boil') || instruction.contains('simmer')) return 10;
+    if (instruction.contains('bake') || instruction.contains('roast')) return 20;
+    if (instruction.contains('cook') || instruction.contains('fry')) return 5;
+    if (instruction.contains('rest') || instruction.contains('marinate')) return 15;
+    
+    // Default suggestion
+    return 5;
   }
 }

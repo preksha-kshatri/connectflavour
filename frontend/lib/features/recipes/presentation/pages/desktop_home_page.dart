@@ -18,7 +18,7 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
   List<Recipe> _recipes = [];
   List<Recipe> _displayedRecipes = [];
   bool _isLoading = false;
-  
+
   String _categoryFilter = 'All';
   String _difficultyFilter = 'All';
 
@@ -36,7 +36,7 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final data = await _recipeService.getRecipes();
       setState(() {
@@ -56,19 +56,19 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
 
   void _applyFilters() {
     final query = _searchController.text.toLowerCase();
-    
+
     setState(() {
       _displayedRecipes = _recipes.where((recipe) {
-        final matchesSearch = query.isEmpty || 
+        final matchesSearch = query.isEmpty ||
             recipe.title.toLowerCase().contains(query) ||
             recipe.description.toLowerCase().contains(query);
-        
+
         final matchesCategory = _categoryFilter == 'All' ||
             recipe.category.toLowerCase() == _categoryFilter.toLowerCase();
-        
+
         final matchesDifficulty = _difficultyFilter == 'All' ||
             recipe.difficulty.toLowerCase() == _difficultyFilter.toLowerCase();
-        
+
         return matchesSearch && matchesCategory && matchesDifficulty;
       }).toList();
     });
@@ -144,7 +144,10 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
   }
 
   Widget _buildFilters() {
-    final categories = ['All', ...{for (var r in _recipes) r.category}];
+    final categories = [
+      'All',
+      ...{for (var r in _recipes) r.category}
+    ];
     final difficulties = ['All', 'Easy', 'Medium', 'Hard'];
 
     return Container(
@@ -250,7 +253,7 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
 
 class _RecipeCard extends StatelessWidget {
   final Recipe recipe;
-  
+
   const _RecipeCard({required this.recipe});
 
   @override

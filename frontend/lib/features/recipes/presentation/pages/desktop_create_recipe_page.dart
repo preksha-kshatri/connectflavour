@@ -152,37 +152,46 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 900),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildBasicInfo(),
-                        const SizedBox(height: 32),
-                        _buildRecipeDetails(),
-                        const SizedBox(height: 32),
-                        _buildIngredients(),
-                        const SizedBox(height: 32),
-                        _buildInstructions(),
-                        const SizedBox(height: 48),
-                        _buildActions(),
-                      ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(32),
+                  child: Center(
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: 900,
+                        minWidth: constraints.maxWidth > 900
+                            ? 900
+                            : constraints.maxWidth,
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildBasicInfo(),
+                            const SizedBox(height: 32),
+                            _buildRecipeDetails(),
+                            const SizedBox(height: 32),
+                            _buildIngredients(),
+                            const SizedBox(height: 32),
+                            _buildInstructions(),
+                            const SizedBox(height: 48),
+                            _buildActions(),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -243,8 +252,7 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
                 labelText: 'Recipe Title',
                 border: OutlineInputBorder(),
               ),
-              validator: (value) =>
-                  value?.isEmpty ?? true ? 'Required' : null,
+              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -254,8 +262,7 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
                 border: OutlineInputBorder(),
               ),
               maxLines: 3,
-              validator: (value) =>
-                  value?.isEmpty ?? true ? 'Required' : null,
+              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             Row(
@@ -409,7 +416,8 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
                       const SizedBox(width: 8),
                       IconButton(
                         onPressed: () => _removeIngredient(index),
-                        icon: const Icon(Icons.remove_circle, color: Colors.red),
+                        icon:
+                            const Icon(Icons.remove_circle, color: Colors.red),
                       ),
                     ],
                   ],
@@ -468,7 +476,8 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
                       const SizedBox(width: 8),
                       IconButton(
                         onPressed: () => _removeInstruction(index),
-                        icon: const Icon(Icons.remove_circle, color: Colors.red),
+                        icon:
+                            const Icon(Icons.remove_circle, color: Colors.red),
                       ),
                     ],
                   ],
@@ -485,31 +494,35 @@ class _DesktopCreateRecipePageState extends State<DesktopCreateRecipePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        OutlinedButton(
-          onPressed: _isSubmitting ? null : () => context.go('/recipes'),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            child: Text('Cancel'),
+        Flexible(
+          child: OutlinedButton(
+            onPressed: _isSubmitting ? null : () => context.go('/recipes'),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Text('Cancel'),
+            ),
           ),
         ),
         const SizedBox(width: 16),
-        FilledButton(
-          onPressed: _isSubmitting ? null : _submitRecipe,
-          style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF2E7D32),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            child: _isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text('Create Recipe'),
+        Flexible(
+          child: FilledButton(
+            onPressed: _isSubmitting ? null : _submitRecipe,
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2E7D32),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Create Recipe'),
+            ),
           ),
         ),
       ],
