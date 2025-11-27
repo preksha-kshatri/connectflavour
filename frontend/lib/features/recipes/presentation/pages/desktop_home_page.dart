@@ -11,7 +11,8 @@ class DesktopHomePage extends StatefulWidget {
   State<DesktopHomePage> createState() => _DesktopHomePageState();
 }
 
-class _DesktopHomePageState extends State<DesktopHomePage> {
+class _DesktopHomePageState extends State<DesktopHomePage>
+    with WidgetsBindingObserver {
   final StaticRecipeService _recipeService = StaticRecipeService();
   final TextEditingController _searchController = TextEditingController();
 
@@ -25,13 +26,24 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadData();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Reload data when app comes back to foreground or resumes
+    if (state == AppLifecycleState.resumed) {
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
@@ -129,6 +141,15 @@ class _DesktopHomePageState extends State<DesktopHomePage> {
             ],
           ),
           const Spacer(),
+          IconButton(
+            onPressed: _loadData,
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh recipes',
+            style: IconButton.styleFrom(
+              foregroundColor: const Color(0xFF2E7D32),
+            ),
+          ),
+          const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: () => context.go('/create'),
             icon: const Icon(Icons.add),
