@@ -7,17 +7,20 @@ The "Unable to load profile" error (and similar errors on all pages) was caused 
 ### Changes Made:
 
 1. **Created AuthService** (`core/services/auth_service.dart`)
+
    - Proper login/register implementation
    - Token storage using StorageService
    - Token verification
 
 2. **Updated Login Page** (`features/authentication/presentation/pages/desktop_login_page.dart`)
+
    - Changed from email to username field
    - Integrated with real AuthService
    - Added error message display
    - Shows login errors to user
 
 3. **Updated Splash Page** (`features/authentication/presentation/pages/splash_page.dart`)
+
    - Checks if user is already logged in
    - Verifies token validity before navigating
    - Auto-redirects to home if already authenticated
@@ -32,13 +35,16 @@ The "Unable to load profile" error (and similar errors on all pages) was caused 
 ## 🧪 How to Test
 
 ### Step 1: Start Backend Server ✅ (Already Running)
+
 ```bash
 cd backend/connectflavour
 python manage.py runserver
 ```
+
 Backend is running at: http://localhost:8000
 
 ### Step 2: Reload Frontend App
+
 The Flutter app is already running at: http://localhost:52092
 
 **Just refresh your browser (F5 or Ctrl+R)**
@@ -47,28 +53,30 @@ The Flutter app is already running at: http://localhost:52092
 
 Use any of these **seeded test accounts**:
 
-| Username | Password | Description |
-|----------|----------|-------------|
-| `john_chef` | `password123` | Main test user with recipes |
-| `sarah_baker` | `password123` | User with baking recipes |
-| `mike_grill` | `password123` | Grilling enthusiast |
-| `emma_cook` | `password123` | Home cook |
-| `david_pro` | `password123` | Professional chef |
-| `lisa_vegan` | `password123` | Vegan specialist |
-| `alex_fusion` | `password123` | Fusion cuisine expert |
-| `admin` | `admin123` | Admin account |
+| Username      | Password      | Description                 |
+| ------------- | ------------- | --------------------------- |
+| `john_chef`   | `password123` | Main test user with recipes |
+| `sarah_baker` | `password123` | User with baking recipes    |
+| `mike_grill`  | `password123` | Grilling enthusiast         |
+| `emma_cook`   | `password123` | Home cook                   |
+| `david_pro`   | `password123` | Professional chef           |
+| `lisa_vegan`  | `password123` | Vegan specialist            |
+| `alex_fusion` | `password123` | Fusion cuisine expert       |
+| `admin`       | `admin123`    | Admin account               |
 
 **Recommended for testing:** Use `john_chef` / `password123`
 
 ### Step 4: What You Should See
 
 #### ✅ After Login Success:
+
 1. **Home Page** - Shows all recipes from database
 2. **Categories Page** - Shows 15 categories with counts
 3. **Create Recipe Page** - Form to create new recipe
 4. **Profile Page** - Your user profile with tabs (My Recipes, Favorites, Activity)
 
 #### ❌ Before Login:
+
 - Splash screen → Login page
 - All other pages redirect to login if not authenticated
 
@@ -77,6 +85,7 @@ Use any of these **seeded test accounts**:
 ## 🔍 Testing the Flow
 
 ### Test 1: Fresh Login
+
 1. Open browser at http://localhost:52092
 2. You'll see splash screen (3 seconds)
 3. Redirects to login page
@@ -85,20 +94,26 @@ Use any of these **seeded test accounts**:
 6. Should navigate to Home page with recipes
 
 ### Test 2: Browse Features
+
 Once logged in:
+
 - **Home** - Click any recipe to view details
 - **Categories** - Filter recipes by category
 - **Create** - Try creating a new recipe (with image upload)
 - **Profile** - View your recipes and favorites
 
 ### Test 3: API Calls
+
 Open Browser DevTools (F12) → Network tab:
+
 - You should see `Authorization: Bearer <token>` in request headers
 - All API calls to `/api/v1/*` should return 200 OK
 - No more 401 Unauthorized errors
 
 ### Test 4: Logout (Manual)
+
 Currently there's no logout button in the UI yet, but you can:
+
 - Clear browser storage (Application → Storage → Clear)
 - Refresh page - should redirect to login
 
@@ -107,8 +122,9 @@ Currently there's no logout button in the UI yet, but you can:
 ## 🎯 Expected Behavior
 
 ### Authentication Flow:
+
 ```
-Splash (3s) 
+Splash (3s)
   ↓
 Check if logged in?
   ↓
@@ -128,6 +144,7 @@ Check if logged in?
 ```
 
 ### API Request Flow:
+
 ```
 User Action (e.g., view profile)
   ↓
@@ -147,11 +164,13 @@ Display in UI
 ## 🐛 Troubleshooting
 
 ### Error: "Invalid username or password"
+
 - Check you're using `username` not `email`
 - Verify backend is running: http://localhost:8000
 - Try test user: `john_chef` / `password123`
 
 ### Error: "Unable to load profile" (still appears)
+
 1. Open DevTools → Console
 2. Check for error messages
 3. Go to Network tab
@@ -159,18 +178,21 @@ Display in UI
 5. Check if Authorization header is present
 
 ### Backend Not Running:
+
 ```bash
 cd backend/connectflavour
 python manage.py runserver
 ```
 
 ### Database Not Seeded:
+
 ```bash
 cd backend/connectflavour
 python manage.py seed_data --clear
 ```
 
 ### Clear Old Tokens (if stuck):
+
 1. Open DevTools (F12)
 2. Application tab → Storage
 3. Clear all storage
@@ -181,6 +203,7 @@ python manage.py seed_data --clear
 ## 📊 What Should Work Now
 
 ### ✅ Pages That Should Load:
+
 - [x] **Login Page** - Form with username/password
 - [x] **Home Page** - List of recipes from database
 - [x] **Recipe Detail** - Full recipe with reviews
@@ -189,6 +212,7 @@ python manage.py seed_data --clear
 - [x] **Profile Page** - User info with tabs
 
 ### ✅ Features That Should Work:
+
 - [x] **Login** - With test credentials
 - [x] **Token Storage** - JWT tokens saved in browser
 - [x] **Auto-redirect** - If not logged in
@@ -220,21 +244,25 @@ python manage.py seed_data --clear
 ## 🚀 Next Steps (Optional Enhancements)
 
 ### Add Logout Button to Profile:
+
 1. Add button in profile app bar
 2. Call `AuthService().logout()`
 3. Navigate to login page
 4. Clear stored tokens
 
 ### Add Remember Me:
+
 1. Store username if checked
 2. Pre-fill on next login
 
 ### Add Error Messages:
+
 1. Network errors
 2. Server errors
 3. Invalid credentials
 
 ### Add Loading States:
+
 1. Show spinner during login
 2. Disable button while loading
 3. Prevent double submissions
@@ -245,7 +273,8 @@ python manage.py seed_data --clear
 
 **Problem:** App was not authenticated, so all API calls to protected endpoints failed with 401 errors.
 
-**Solution:** 
+**Solution:**
+
 - Created proper AuthService
 - Updated login page to use real authentication
 - Fixed token storage and retrieval

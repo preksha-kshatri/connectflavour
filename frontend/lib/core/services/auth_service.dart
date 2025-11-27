@@ -24,7 +24,7 @@ class AuthService {
       final tokens = response.data['tokens'];
       final accessToken = tokens['access'];
       final refreshToken = tokens['refresh'];
-      
+
       await StorageService.setString(AppConfig.accessTokenKey, accessToken);
       await StorageService.setString(AppConfig.refreshTokenKey, refreshToken);
 
@@ -65,7 +65,7 @@ class AuthService {
       final tokens = response.data['tokens'];
       final accessToken = tokens['access'];
       final refreshToken = tokens['refresh'];
-      
+
       await StorageService.setString(AppConfig.accessTokenKey, accessToken);
       await StorageService.setString(AppConfig.refreshTokenKey, refreshToken);
 

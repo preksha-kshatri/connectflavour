@@ -183,11 +183,13 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                   decoration: BoxDecoration(
                                     color: Colors.red.shade50,
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.red.shade200),
+                                    border:
+                                        Border.all(color: Colors.red.shade200),
                                   ),
                                   child: Row(
                                     children: [
-                                      Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+                                      Icon(Icons.error_outline,
+                                          color: Colors.red.shade700, size: 20),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(

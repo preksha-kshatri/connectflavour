@@ -53,11 +53,11 @@ class _SplashPageState extends State<SplashPage>
 
   void _navigateToNext() async {
     await Future.delayed(const Duration(seconds: 3));
-    
+
     if (mounted) {
       // Check if user is logged in
       final isLoggedIn = await _authService.isLoggedIn();
-      
+
       if (isLoggedIn) {
         // Verify token is still valid
         final isValid = await _authService.verifyToken();
