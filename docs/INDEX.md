@@ -19,7 +19,10 @@ docs/
 │   ├── DESKTOP_QUICK_REFERENCE.md            ⚡ Quick Reference
 │   ├── desktop-setup-guide.md                🔧 Setup Instructions
 │   ├── STATIC_DATA_MODE.md                   📦 Static Mode Guide
-│   └── STATIC_MODE_QUICK_REFERENCE.md        ⚡ Static Mode Quick Ref
+│   ├── STATIC_MODE_QUICK_REFERENCE.md        ⚡ Static Mode Quick Ref
+│   ├── RECIPE_CREATION_WORKING.md            ✅ Recipe Creation Guide
+│   ├── RECIPE_CREATION_QUICK_REF.md          ⚡ Recipe Creation Quick Ref
+│   └── RECIPE_CREATE_TEST.md                 🧪 Recipe Testing Guide
 │
 ├── 📜 MIGRATION HISTORY
 │   ├── DESKTOP_MIGRATION_SUMMARY.md          📝 What Changed
@@ -114,6 +117,28 @@ docs/
 - Running the app
 - Common commands
 
+### 🍳 "I want to test recipe creation"
+
+**Read this first**: [RECIPE_CREATION_QUICK_REF.md](RECIPE_CREATION_QUICK_REF.md)
+
+- Quick guide to creating recipes
+- How to view created recipes
+- Troubleshooting tips
+- ⚡ 2-minute test
+
+**Then**: [RECIPE_CREATION_WORKING.md](RECIPE_CREATION_WORKING.md)
+
+- Complete technical details
+- Data flow and architecture
+- Storage schema
+- Full testing instructions
+
+**For testing**: [RECIPE_CREATE_TEST.md](RECIPE_CREATE_TEST.md)
+
+- Step-by-step testing guide
+- Visual flow diagrams
+- Verification checklist
+
 ### 📚 "I want to understand the full picture"
 
 **Read in this order**:
@@ -207,6 +232,42 @@ docs/
 - Shortcuts
 - Common tasks
 - Useful tips
+
+#### [RECIPE_CREATION_WORKING.md](RECIPE_CREATION_WORKING.md) ✅
+
+**Best for**: Understanding recipe creation feature  
+**Length**: ~15 min read  
+**Content**:
+
+- Implementation verification
+- Technical architecture
+- Data flow diagrams
+- Storage schema
+- Testing instructions
+- Troubleshooting guide
+
+#### [RECIPE_CREATION_QUICK_REF.md](RECIPE_CREATION_QUICK_REF.md) ⚡
+
+**Best for**: Quick recipe creation reference  
+**Length**: ~3 min read  
+**Content**:
+
+- How to create recipes
+- Key features list
+- Quick troubleshooting
+- Code locations
+
+#### [RECIPE_CREATE_TEST.md](RECIPE_CREATE_TEST.md) 🧪
+
+**Best for**: Testing recipe creation  
+**Length**: ~10 min read  
+**Content**:
+
+- Manual testing steps
+- Visual flow diagrams
+- Verification checklist
+- Recent improvements
+- Quick test guide
 
 ### Migration History
 
