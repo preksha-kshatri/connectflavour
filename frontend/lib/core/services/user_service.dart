@@ -12,9 +12,22 @@ class UserService {
       print('User profile response: ${response.data}');
       return User.fromJson(response.data);
     } catch (e) {
-      print('Error fetching user profile: $e');
-      rethrow; // Rethrow to let the UI handle the error
+      print('Error fetching user profile: $e - Using static fallback data');
+      return _getStaticUser();
     }
+  }
+
+  // Static fallback user
+  User _getStaticUser() {
+    return User(
+      id: 1,
+      username: 'demo_user',
+      email: 'demo@connectflavour.com',
+      firstName: 'Demo',
+      lastName: 'User',
+      bio: 'Food enthusiast and home chef',
+      dateJoined: DateTime.now().subtract(const Duration(days: 90)),
+    );
   }
 
   // Update user profile
@@ -50,9 +63,60 @@ class UserService {
       final results = response.data['results'] as List<dynamic>? ?? [];
       return results.map((json) => Recipe.fromJson(json)).toList();
     } catch (e) {
-      print('Error fetching user recipes: $e');
-      return [];
+      print('Error fetching user recipes: $e - Using static fallback data');
+      return _getStaticUserRecipes();
     }
+  }
+
+  // Static fallback user recipes
+  List<Recipe> _getStaticUserRecipes() {
+    final now = DateTime.now();
+    return [
+      Recipe(
+        id: 1,
+        title: 'My Signature Pasta',
+        slug: 'my-signature-pasta',
+        description: 'A family recipe passed down for generations',
+        category: 'Italian',
+        difficulty: 'Medium',
+        prepTime: 15,
+        cookTime: 25,
+        servings: 4,
+        rating: 4.8,
+        author: 'demo_user',
+        authorName: 'Demo User',
+        ingredients: ['Pasta', 'Tomatoes', 'Garlic', 'Basil', 'Olive oil'],
+        instructions: [
+          RecipeStep(stepNumber: 1, instruction: 'Cook pasta'),
+          RecipeStep(stepNumber: 2, instruction: 'Make sauce'),
+          RecipeStep(stepNumber: 3, instruction: 'Combine and serve'),
+        ],
+        createdAt: now.subtract(const Duration(days: 5)),
+        updatedAt: now.subtract(const Duration(days: 5)),
+      ),
+      Recipe(
+        id: 2,
+        title: 'Homemade Pizza',
+        slug: 'homemade-pizza',
+        description: 'Perfect crispy crust with fresh toppings',
+        category: 'Italian',
+        difficulty: 'Medium',
+        prepTime: 20,
+        cookTime: 15,
+        servings: 4,
+        rating: 4.9,
+        author: 'demo_user',
+        authorName: 'Demo User',
+        ingredients: ['Pizza dough', 'Tomato sauce', 'Mozzarella', 'Basil'],
+        instructions: [
+          RecipeStep(stepNumber: 1, instruction: 'Prepare dough'),
+          RecipeStep(stepNumber: 2, instruction: 'Add toppings'),
+          RecipeStep(stepNumber: 3, instruction: 'Bake until crispy'),
+        ],
+        createdAt: now.subtract(const Duration(days: 10)),
+        updatedAt: now.subtract(const Duration(days: 10)),
+      ),
+    ];
   }
 
   // Get user's favorite recipes
@@ -62,9 +126,38 @@ class UserService {
       final results = response.data['results'] as List<dynamic>? ?? [];
       return results.map((json) => Recipe.fromJson(json)).toList();
     } catch (e) {
-      print('Error fetching favorites: $e');
-      return [];
+      print('Error fetching favorites: $e - Using static fallback data');
+      return _getStaticFavorites();
     }
+  }
+
+  // Static fallback favorites
+  List<Recipe> _getStaticFavorites() {
+    final now = DateTime.now();
+    return [
+      Recipe(
+        id: 3,
+        title: 'Chocolate Lava Cake',
+        slug: 'chocolate-lava-cake',
+        description: 'Decadent chocolate cake with a molten center',
+        category: 'Dessert',
+        difficulty: 'Hard',
+        prepTime: 20,
+        cookTime: 12,
+        servings: 4,
+        rating: 4.9,
+        author: 'chef_maria',
+        authorName: 'Chef Maria',
+        ingredients: ['Dark chocolate', 'Butter', 'Eggs', 'Sugar', 'Flour'],
+        instructions: [
+          RecipeStep(stepNumber: 1, instruction: 'Melt chocolate'),
+          RecipeStep(stepNumber: 2, instruction: 'Mix ingredients'),
+          RecipeStep(stepNumber: 3, instruction: 'Bake'),
+        ],
+        createdAt: now.subtract(const Duration(days: 2)),
+        updatedAt: now.subtract(const Duration(days: 2)),
+      ),
+    ];
   }
 
   // Get user activity
@@ -74,9 +167,27 @@ class UserService {
       final results = response.data['results'] as List<dynamic>? ?? [];
       return results.map((json) => Activity.fromJson(json)).toList();
     } catch (e) {
-      print('Error fetching activity: $e');
-      return [];
+      print('Error fetching activity: $e - Using static fallback data');
+      return _getStaticActivity();
     }
+  }
+
+  // Static fallback activity
+  List<Activity> _getStaticActivity() {
+    return [
+      Activity(
+        id: 1,
+        type: 'recipe_created',
+        description: 'Created a new recipe: My Signature Pasta',
+        timestamp: DateTime.now().subtract(const Duration(days: 1)),
+      ),
+      Activity(
+        id: 2,
+        type: 'recipe_liked',
+        description: 'Liked Chocolate Lava Cake',
+        timestamp: DateTime.now().subtract(const Duration(days: 2)),
+      ),
+    ];
   }
 
   // Change password

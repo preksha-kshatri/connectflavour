@@ -31,9 +31,184 @@ class RecipeService {
       final results = response.data['results'] as List<dynamic>? ?? [];
       return results.map((json) => Recipe.fromJson(json)).toList();
     } catch (e) {
-      print('Error fetching recipes: $e');
-      return [];
+      print('Error fetching recipes: $e - Using static fallback data');
+      return _getStaticRecipes();
     }
+  }
+
+  // Static fallback recipes
+  List<Recipe> _getStaticRecipes() {
+    final now = DateTime.now();
+    return [
+      Recipe(
+        id: 1,
+        title: 'Classic Spaghetti Carbonara',
+        slug: 'classic-spaghetti-carbonara',
+        description: 'A creamy Italian pasta dish with eggs, cheese, and bacon',
+        category: 'Italian',
+        difficulty: 'Medium',
+        prepTime: 15,
+        cookTime: 20,
+        servings: 4,
+        rating: 4.8,
+        author: 'demo_user',
+        authorName: 'Demo User',
+        ingredients: [
+          'Spaghetti',
+          'Eggs',
+          'Bacon',
+          'Parmesan cheese',
+          'Black pepper'
+        ],
+        instructions: [
+          RecipeStep(
+              stepNumber: 1,
+              instruction: 'Boil pasta according to package directions'),
+          RecipeStep(stepNumber: 2, instruction: 'Cook bacon until crispy'),
+          RecipeStep(stepNumber: 3, instruction: 'Mix eggs and cheese'),
+          RecipeStep(
+              stepNumber: 4, instruction: 'Combine everything and serve'),
+        ],
+        createdAt: now.subtract(const Duration(days: 5)),
+        updatedAt: now.subtract(const Duration(days: 5)),
+      ),
+      Recipe(
+        id: 2,
+        title: 'Chicken Tikka Masala',
+        slug: 'chicken-tikka-masala',
+        description: 'Tender chicken in a rich, creamy tomato sauce',
+        category: 'Indian',
+        difficulty: 'Hard',
+        prepTime: 30,
+        cookTime: 40,
+        servings: 6,
+        rating: 4.9,
+        author: 'demo_user',
+        authorName: 'Demo User',
+        ingredients: ['Chicken', 'Yogurt', 'Tomatoes', 'Cream', 'Spices'],
+        instructions: [
+          RecipeStep(
+              stepNumber: 1,
+              instruction: 'Marinate chicken in yogurt and spices'),
+          RecipeStep(stepNumber: 2, instruction: 'Grill chicken pieces'),
+          RecipeStep(stepNumber: 3, instruction: 'Make tomato-cream sauce'),
+          RecipeStep(stepNumber: 4, instruction: 'Simmer chicken in sauce'),
+        ],
+        createdAt: now.subtract(const Duration(days: 10)),
+        updatedAt: now.subtract(const Duration(days: 10)),
+      ),
+      Recipe(
+        id: 3,
+        title: 'Caesar Salad',
+        slug: 'caesar-salad',
+        description: 'Fresh romaine lettuce with classic Caesar dressing',
+        category: 'Salad',
+        difficulty: 'Easy',
+        prepTime: 10,
+        cookTime: 0,
+        servings: 4,
+        rating: 4.5,
+        author: 'demo_user',
+        authorName: 'Demo User',
+        ingredients: [
+          'Romaine lettuce',
+          'Croutons',
+          'Parmesan',
+          'Caesar dressing'
+        ],
+        instructions: [
+          RecipeStep(stepNumber: 1, instruction: 'Wash and chop lettuce'),
+          RecipeStep(
+              stepNumber: 2, instruction: 'Toss with dressing and cheese'),
+          RecipeStep(stepNumber: 3, instruction: 'Add croutons and serve'),
+        ],
+        createdAt: now.subtract(const Duration(days: 3)),
+        updatedAt: now.subtract(const Duration(days: 3)),
+      ),
+      Recipe(
+        id: 4,
+        title: 'Beef Tacos',
+        slug: 'beef-tacos',
+        description: 'Seasoned ground beef in crispy taco shells',
+        category: 'Mexican',
+        difficulty: 'Easy',
+        prepTime: 10,
+        cookTime: 15,
+        servings: 4,
+        rating: 4.6,
+        author: 'demo_user',
+        authorName: 'Demo User',
+        ingredients: [
+          'Ground beef',
+          'Taco shells',
+          'Lettuce',
+          'Cheese',
+          'Salsa'
+        ],
+        instructions: [
+          RecipeStep(
+              stepNumber: 1,
+              instruction: 'Brown ground beef with taco seasoning'),
+          RecipeStep(stepNumber: 2, instruction: 'Warm taco shells'),
+          RecipeStep(
+              stepNumber: 3, instruction: 'Assemble tacos with toppings'),
+        ],
+        createdAt: now.subtract(const Duration(days: 7)),
+        updatedAt: now.subtract(const Duration(days: 7)),
+      ),
+      Recipe(
+        id: 5,
+        title: 'Chocolate Lava Cake',
+        slug: 'chocolate-lava-cake',
+        description: 'Decadent chocolate cake with a molten center',
+        category: 'Dessert',
+        difficulty: 'Hard',
+        prepTime: 20,
+        cookTime: 12,
+        servings: 4,
+        rating: 4.9,
+        author: 'demo_user',
+        authorName: 'Demo User',
+        ingredients: ['Dark chocolate', 'Butter', 'Eggs', 'Sugar', 'Flour'],
+        instructions: [
+          RecipeStep(stepNumber: 1, instruction: 'Melt chocolate and butter'),
+          RecipeStep(stepNumber: 2, instruction: 'Mix in eggs and sugar'),
+          RecipeStep(stepNumber: 3, instruction: 'Add flour and fill ramekins'),
+          RecipeStep(stepNumber: 4, instruction: 'Bake until edges are set'),
+        ],
+        createdAt: now.subtract(const Duration(days: 2)),
+        updatedAt: now.subtract(const Duration(days: 2)),
+      ),
+      Recipe(
+        id: 6,
+        title: 'Greek Moussaka',
+        slug: 'greek-moussaka',
+        description: 'Layered eggplant casserole with meat sauce',
+        category: 'Greek',
+        difficulty: 'Hard',
+        prepTime: 40,
+        cookTime: 60,
+        servings: 8,
+        rating: 4.7,
+        author: 'demo_user',
+        authorName: 'Demo User',
+        ingredients: [
+          'Eggplant',
+          'Ground lamb',
+          'Tomatoes',
+          'Bechamel sauce',
+          'Cheese'
+        ],
+        instructions: [
+          RecipeStep(stepNumber: 1, instruction: 'Slice and salt eggplant'),
+          RecipeStep(stepNumber: 2, instruction: 'Make meat sauce'),
+          RecipeStep(stepNumber: 3, instruction: 'Prepare bechamel sauce'),
+          RecipeStep(stepNumber: 4, instruction: 'Layer and bake'),
+        ],
+        createdAt: now.subtract(const Duration(days: 15)),
+        updatedAt: now.subtract(const Duration(days: 15)),
+      ),
+    ];
   }
 
   // Get single recipe by slug

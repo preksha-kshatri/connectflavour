@@ -14,6 +14,13 @@ import 'package:connectflavour/shared/widgets/main_navigation.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
+    redirect: (context, state) {
+      // Redirect /home to /recipes (home is now hidden)
+      if (state.uri.path == '/home') {
+        return '/recipes';
+      }
+      return null;
+    },
     routes: [
       // Splash & Auth
       GoRoute(

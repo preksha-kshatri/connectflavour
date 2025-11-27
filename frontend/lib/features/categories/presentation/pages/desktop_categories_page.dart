@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/services/category_service.dart';
+import '../../../../core/services/static_category_service.dart';
 import '../../../../core/models/category.dart';
 
 class DesktopCategoriesPage extends StatefulWidget {
@@ -11,7 +11,7 @@ class DesktopCategoriesPage extends StatefulWidget {
 }
 
 class _DesktopCategoriesPageState extends State<DesktopCategoriesPage> {
-  final CategoryService _categoryService = CategoryService();
+  final StaticCategoryService _categoryService = StaticCategoryService();
 
   List<Category> _allCategories = [];
   List<Category> _filteredCategories = [];
@@ -28,6 +28,7 @@ class _DesktopCategoriesPageState extends State<DesktopCategoriesPage> {
     'salads': Icons.eco,
     'soups': Icons.soup_kitchen,
     'beverages': Icons.local_cafe,
+    'snacks': Icons.fastfood,
     'pasta': Icons.ramen_dining,
     'seafood': Icons.set_meal,
     'vegetarian': Icons.grass,
@@ -238,7 +239,7 @@ class _DesktopCategoriesPageState extends State<DesktopCategoriesPage> {
   }
 
   Widget _buildCategoryCard(Category category) {
-    final iconData = _getIconData(category.icon ?? 'restaurant');
+    final iconData = _getIconData(category.slug); // Use slug instead of icon
     final recipeCount = category.recipesCount;
 
     return InkWell(

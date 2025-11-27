@@ -18,7 +18,7 @@ class _MainNavigationState extends State<MainNavigation> {
   int _getCurrentIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
     switch (location) {
-      case '/home':
+      case '/recipes':
         return 0;
       case '/categories':
         return 1;
@@ -26,6 +26,8 @@ class _MainNavigationState extends State<MainNavigation> {
         return 2;
       case '/profile':
         return 3;
+      case '/home': // Hidden but still accessible
+        return -1;
       default:
         return 0;
     }
@@ -34,7 +36,7 @@ class _MainNavigationState extends State<MainNavigation> {
   void _onItemTapped(BuildContext context, int index) {
     switch (index) {
       case 0:
-        context.go('/home');
+        context.go('/recipes');
         break;
       case 1:
         context.go('/categories');
@@ -177,9 +179,9 @@ class _MainNavigationState extends State<MainNavigation> {
             ),
             destinations: const [
               NavigationRailDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: Text('Home'),
+                icon: Icon(Icons.restaurant_outlined),
+                selectedIcon: Icon(Icons.restaurant),
+                label: Text('Recipes'),
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.category_outlined),
@@ -250,8 +252,8 @@ class _MainNavigationState extends State<MainNavigation> {
                 ],
               ),
             ),
-            _buildDrawerItem(context, 0, currentIndex, Icons.home_outlined,
-                Icons.home, 'Home'),
+            _buildDrawerItem(context, 0, currentIndex, Icons.restaurant_outlined,
+                Icons.restaurant, 'Recipes'),
             _buildDrawerItem(context, 1, currentIndex, Icons.category_outlined,
                 Icons.category, 'Categories'),
             _buildDrawerItem(context, 2, currentIndex, Icons.add_circle_outline,
@@ -328,9 +330,9 @@ class _MainNavigationState extends State<MainNavigation> {
             ),
             items: const [
               BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
-                label: 'Home',
+                icon: Icon(Icons.restaurant_outlined),
+                activeIcon: Icon(Icons.restaurant),
+                label: 'Recipes',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.category_outlined),

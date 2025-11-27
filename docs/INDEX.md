@@ -18,7 +18,8 @@ docs/
 ├── 🚀 DEVELOPER GUIDES
 │   ├── DESKTOP_QUICK_REFERENCE.md            ⚡ Quick Reference
 │   ├── desktop-setup-guide.md                🔧 Setup Instructions
-│   └── desktop-quick-reference.md            💡 Tips & Tricks
+│   ├── STATIC_DATA_MODE.md                   📦 Static Mode Guide
+│   └── STATIC_MODE_QUICK_REFERENCE.md        ⚡ Static Mode Quick Ref
 │
 ├── 📜 MIGRATION HISTORY
 │   ├── DESKTOP_MIGRATION_SUMMARY.md          📝 What Changed
@@ -35,6 +36,22 @@ docs/
 ---
 
 ## 🎯 Choose Your Path
+
+### 🔥 "I need the app working NOW (without backend)"
+
+**Read this first**: [STATIC_MODE_QUICK_REFERENCE.md](STATIC_MODE_QUICK_REFERENCE.md)
+
+- App works completely without backend
+- All features except login/register functional
+- Data persists in browser/device storage
+- 14 pre-loaded recipes ready to use
+
+**Then**: [STATIC_DATA_MODE.md](STATIC_DATA_MODE.md)
+
+- Complete technical implementation details
+- How session storage works
+- Sample data available
+- Architecture overview
 
 ### 👨‍💼 "I'm a stakeholder/manager"
 

@@ -4,7 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:connectflavour/shared/widgets/desktop_app_bar.dart';
 import 'package:connectflavour/core/models/user.dart';
 import 'package:connectflavour/core/models/recipe.dart';
-import 'package:connectflavour/core/services/user_service.dart';
+import 'package:connectflavour/core/services/static_user_service.dart';
+import 'package:connectflavour/core/services/static_recipe_service.dart';
 
 /// Desktop-optimized profile page with tabs
 class DesktopProfilePage extends StatefulWidget {
@@ -17,7 +18,8 @@ class DesktopProfilePage extends StatefulWidget {
 class _DesktopProfilePageState extends State<DesktopProfilePage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final UserService _userService = UserService();
+  final StaticUserService _userService = StaticUserService();
+  final StaticRecipeService _recipeService = StaticRecipeService();
 
   User? _user;
   List<Recipe> _userRecipes = [];
@@ -41,13 +43,15 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
 
     try {
       final user = await _userService.getCurrentUser();
-      final recipes = await _userService.getUserRecipes();
-      final favorites = await _userService.getFavoriteRecipes();
-      final activities = await _userService.getUserActivity();
+      final recipes = await _recipeService.getRecipes();
+      final userRecipes =
+          recipes.where((r) => r.author == user?.id.toString()).toList();
+      final favorites = await _recipeService.getFavoriteRecipes();
+      final activities = await _userService.getUserActivity(user?.id ?? 0);
 
       setState(() {
         _user = user;
-        _userRecipes = recipes;
+        _userRecipes = userRecipes;
         _favoriteRecipes = favorites;
         _activities = activities;
         _isLoading = false;
@@ -859,17 +863,18 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
 
     if (image != null) {
       try {
-        final avatarUrl = await _userService.uploadAvatar(image.path);
-        if (avatarUrl != null) {
-          await _loadUserData();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Avatar updated successfully'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
+        // In static mode, just simulate avatar update with a placeholder URL
+        final avatarUrl =
+            'https://i.pravatar.cc/300?img=${DateTime.now().millisecondsSinceEpoch % 70}';
+        await _userService.updateUserProfile(profilePicture: avatarUrl);
+        await _loadUserData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Avatar updated successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
         }
       } catch (e) {
         if (mounted) {
@@ -947,12 +952,12 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
           ElevatedButton(
             onPressed: () async {
               try {
-                await _userService.updateProfile({
-                  'first_name': firstNameController.text,
-                  'last_name': lastNameController.text,
-                  'bio': bioController.text,
-                  'location': locationController.text,
-                });
+                await _userService.updateUserProfile(
+                  firstName: firstNameController.text,
+                  lastName: lastNameController.text,
+                  bio: bioController.text,
+                  location: locationController.text,
+                );
                 await _loadUserData();
                 if (context.mounted) {
                   Navigator.pop(context);
@@ -1097,19 +1102,14 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
                 return;
               }
 
-              final success = await _userService.changePassword(
-                oldPassword: oldPasswordController.text,
-                newPassword: newPasswordController.text,
-              );
-
+              // In static mode, password change always succeeds
               if (context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success
-                        ? 'Password changed successfully'
-                        : 'Failed to change password'),
-                    backgroundColor: success ? Colors.green : Colors.red,
+                  const SnackBar(
+                    content:
+                        Text('Password changed successfully (Static Mode)'),
+                    backgroundColor: Colors.green,
                   ),
                 );
               }
@@ -1153,11 +1153,17 @@ class _DesktopProfilePageState extends State<DesktopProfilePage>
           ),
           ElevatedButton(
             onPressed: () async {
-              final success =
-                  await _userService.deleteAccount(passwordController.text);
+              final success = true; // In static mode, simulate success
               if (success && context.mounted) {
+                await _userService.clearCurrentUser();
                 Navigator.pop(context);
                 context.go('/login');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Account logged out (Static Mode)'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
               } else if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
