@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:connectflavour/core/services/auth_service.dart';
 
 /// Desktop-optimized login page with split-screen layout
 class DesktopLoginPage extends StatefulWidget {
@@ -12,15 +13,17 @@ class DesktopLoginPage extends StatefulWidget {
 
 class _DesktopLoginPageState extends State<DesktopLoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
   bool _rememberMe = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -28,16 +31,34 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    // Simulate login
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final result = await _authService.login(
+        username: _usernameController.text.trim(),
+        password: _passwordController.text,
+      );
 
-    setState(() => _isLoading = false);
-
-    // Navigate to home
-    if (mounted) {
-      context.go('/home');
+      if (mounted) {
+        if (result['success'] == true) {
+          context.go('/home');
+        } else {
+          setState(() {
+            _errorMessage = 'Invalid username or password';
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Login failed. Please try again.';
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -155,19 +176,46 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                               ),
                               const SizedBox(height: 48),
 
-                              // Email field
+                              // Error message
+                              if (_errorMessage != null) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.red.shade200),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: TextStyle(
+                                            color: Colors.red.shade700,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+
+                              // Username field
                               TextFormField(
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
+                                controller: _usernameController,
                                 autofocus: true,
                                 style: const TextStyle(fontSize: 16),
                                 decoration: InputDecoration(
-                                  labelText: 'Email',
+                                  labelText: 'Username',
                                   labelStyle: const TextStyle(fontSize: 13),
-                                  hintText: 'Enter your email',
+                                  hintText: 'Enter your username',
                                   hintStyle: const TextStyle(
                                       fontSize: 16, color: Colors.grey),
-                                  prefixIcon: const Icon(Icons.email_outlined,
+                                  prefixIcon: const Icon(Icons.person_outline,
                                       size: 20),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -180,10 +228,7 @@ class _DesktopLoginPageState extends State<DesktopLoginPage> {
                                 ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Please enter your email';
-                                  }
-                                  if (!value.contains('@')) {
-                                    return 'Please enter a valid email';
+                                    return 'Please enter your username';
                                   }
                                   return null;
                                 },

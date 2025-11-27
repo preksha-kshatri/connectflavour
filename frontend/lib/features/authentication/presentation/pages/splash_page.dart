@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:connectflavour/core/theme/app_theme.dart';
+import 'package:connectflavour/core/services/auth_service.dart';
 import 'package:flutter/foundation.dart';
 
 class SplashPage extends StatefulWidget {
@@ -16,6 +17,7 @@ class _SplashPageState extends State<SplashPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  final _authService = AuthService();
 
   @override
   void initState() {
@@ -49,13 +51,25 @@ class _SplashPageState extends State<SplashPage>
     _animationController.forward();
   }
 
-  void _navigateToNext() {
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        // TODO: Check if user is logged in
+  void _navigateToNext() async {
+    await Future.delayed(const Duration(seconds: 3));
+    
+    if (mounted) {
+      // Check if user is logged in
+      final isLoggedIn = await _authService.isLoggedIn();
+      
+      if (isLoggedIn) {
+        // Verify token is still valid
+        final isValid = await _authService.verifyToken();
+        if (isValid) {
+          context.go('/home');
+        } else {
+          context.go('/login');
+        }
+      } else {
         context.go('/login');
       }
-    });
+    }
   }
 
   @override

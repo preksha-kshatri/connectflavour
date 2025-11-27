@@ -8,7 +8,7 @@ class UserService {
   // Get current user profile
   Future<User?> getCurrentUser() async {
     try {
-      final response = await _apiService.get('/auth/me/');
+      final response = await _apiService.get('/auth/profile/');
       return User.fromJson(response.data);
     } catch (e) {
       print('Error fetching user: $e');
@@ -19,7 +19,7 @@ class UserService {
   // Update user profile
   Future<User?> updateProfile(Map<String, dynamic> data) async {
     try {
-      final response = await _apiService.patch('/auth/me/', data: data);
+      final response = await _apiService.patch('/auth/profile/', data: data);
       return User.fromJson(response.data);
     } catch (e) {
       print('Error updating profile: $e');
